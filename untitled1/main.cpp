@@ -4,6 +4,8 @@
 #include <sstream>
 #include <utility>
 #include <random>
+#include <stack>
+#include <queue>
 
 struct Item {
     int occurrences;
@@ -37,17 +39,17 @@ struct BSTNode {
     BSTNode(std::string  k, Item v) : key(std::move(k)), value(v) , left(nullptr), right(nullptr) {}
 };
 
+static Item findValue(const std::string& key){
+    Item value{};
+    value.occurrences = 1;
+    value.letters = key.size();
+    value.vowels = vowels(key);
+    return value;
+}
+
 class SymbolTableBST {
 private:
     BSTNode* root;
-
-    Item findValue(const std::string& key){
-        Item value{};
-        value.occurrences = 1;
-        value.letters = key.size();
-        value.vowels = vowels(key);
-        return value;
-    }
 
     BSTNode* addRecursive(BSTNode* node, const std::string& key, Item value){
 
@@ -96,7 +98,7 @@ public:
         else
             return Item::None();  // Return a default value indicating key not found
     }
-    void printtree(){
+    void print(){
         traverseLeft(root);
     }
 };
@@ -135,7 +137,7 @@ public:
         return start;
     }
 
-    void add(const std::string& key) {
+    void put(const std::string& key) {
         size_t index = rank(key);
         for (size_t i = index; i < size; ++i) {
             if (entries[i].key == key) {
@@ -162,9 +164,7 @@ public:
             capacity = newCapacity;
         }
         Item value{};
-        value.letters = key.size();
-        value.vowels = vowels(key);
-        value.occurrences = 1;
+        value = findValue(key);
         // Add the new entry
         auto *aux = new VOEntry[size - index];
         for (size_t i = index; i < size; ++i) {
@@ -176,12 +176,83 @@ public:
         }
         ++size;
     }
-    void display() {
+    Item get(const std::string& key) const {
+        size_t start = 0;
+        size_t end = size - 1;
+
+        while (start <= end) {
+            size_t mid = (start + end) / 2;
+            if (entries[mid].key == key) {
+                return entries[mid].value;
+            } else if (entries[mid].key < key) {
+                start = mid + 1;
+            } else {
+                end = mid - 1;
+            }
+        }
+        // Key not found
+        return Item::None(); // Return a default-constructed value
+    }
+
+
+    void print() {
         for (size_t i = 0; i < size; ++i) {
             std::cout << "Word: " << entries[i].key << std:: endl <<
                       "Number of Occurrences: " << entries[i].value.occurrences << std::endl <<
                       "Number of Letters: " << entries[i].value.letters << std::endl <<
                       "Number of Vowels: " << entries[i].value.vowels << std::endl;
+        }
+    }
+
+
+    void mostOccurred() {
+        if (size == 0) {
+            // Handle the case when the symbol table is empty
+            // Return an empty vector or indicate an error
+            std::cout << "Tabela vazia" << std::endl;
+        }
+
+        std::vector<VOEntry> maxEntries;
+        int maxOccurrences = entries[0].value.occurrences;
+
+        for (size_t i = 1; i < size; ++i) {
+            if (entries[i].value.occurrences > maxOccurrences) {
+                maxEntries.clear();  // Clear the previous entries with the maximum occurrences
+                maxOccurrences = entries[i].value.occurrences;
+            }
+            if (entries[i].value.occurrences == maxOccurrences) {
+                maxEntries.push_back(entries[i]);  // Add the current entry to the vector
+            }
+        }
+
+        for (const auto& entry : maxEntries) {
+            // Access the elements of entry
+            std::cout << "Palavra: " << entry.key << ", Ocorrencias: " << entry.value.occurrences << std::endl;
+        }
+    }
+    void longer() {
+        if (size == 0) {
+            // Handle the case when the symbol table is empty
+            // Return an empty vector or indicate an error
+            std::cout << "Tabela vazia" << std::endl;
+        }
+
+        std::vector<VOEntry> maxEntries;
+        int longer = entries[0].value.letters;
+
+        for (size_t i = 1; i < size; ++i) {
+            if (entries[i].value.letters > longer) {
+                maxEntries.clear();  // Clear the previous entries with the maximum occurrences
+                longer = entries[i].value.letters;
+            }
+            if (entries[i].value.letters == longer) {
+                maxEntries.push_back(entries[i]);  // Add the current entry to the vector
+            }
+        }
+
+        for (const auto& entry : maxEntries) {
+            // Access the elements of entry
+            std::cout << "Palavra: " << entry.key << ", Numero de letras: " << entry.value.letters << std::endl;
         }
     }
 };
@@ -202,22 +273,14 @@ private:
     std::random_device rd;
     std::mt19937 gen;
 
-    Item findValue(const std::string& key) {
-        Item value{};
-        value.occurrences = 1;
-        value.letters = key.size();
-        value.vowels = vowels(key);
-        return value;
-    }
-
-    TreapNode* rotateLeft(TreapNode* node) {
+    static TreapNode* rotateLeft(TreapNode* node) {
         TreapNode* newRoot = node->right;
         node->right = newRoot->left;
         newRoot->left = node;
         return newRoot;
     }
 
-    TreapNode* rotateRight(TreapNode* node) {
+    static TreapNode* rotateRight(TreapNode* node) {
         TreapNode* newRoot = node->left;
         node->left = newRoot->right;
         newRoot->right = node;
@@ -491,61 +554,68 @@ struct No {
     No()
             : is2no(true), ch1(""), val1(Item().None()), ch2(""), val2(Item().None()), p1(nullptr), p2(nullptr), p3(nullptr) {}
 };
-bool cresceu = false;
+bool increased = false;
 class SymbolTable23 {
 private:
-    No* raiz;
+    No* root;
 
-    No* add23(No* raiz, const std::string& key, const Item& val) {
-        if (raiz == nullptr) {
-            raiz = new No();
-            raiz->ch1 = key;
-            raiz->val1 = val;
-            cresceu = true;
-            return raiz;
+    No* add23(No* root, const std::string& key, const Item& val) {
+        if (root == nullptr) {
+            root = new No();
+            root->ch1 = key;
+            root->val1 = val;
+            increased = true;
+            return root;
         }
-
-        if (raiz->p1 != nullptr) { // raiz is not a leaf
-            if (raiz->ch1 > key) {
-                No* p = add23(raiz->p1, key, val);
-                if (cresceu) {
-                    if (raiz->is2no) {
-                        raiz->ch2 = raiz->ch1;
-                        raiz->val2 = raiz->val1;
-                        raiz->p3 = raiz->p2;
-                        raiz->ch1 = p->ch1;
-                        raiz->p2 = p->p2;
-                        raiz->p1 = p->p1;
-                        raiz->val1 = p->val1;
-                        cresceu = false;
-                        raiz->is2no = false;
+        if (key == root->ch1) {
+            root->val1.occurrences +=1;
+            return root;
+        }
+        else if (key == root->ch2) {
+            root->val2.occurrences +=1;
+            return root;
+        }
+        if (root->p1 != nullptr) { // raiz is not a leaf
+            if (root->ch1 > key) {
+                No* p = add23(root->p1, key, val);
+                if (increased) {
+                    if (root->is2no) {
+                        root->ch2 = root->ch1;
+                        root->val2 = root->val1;
+                        root->p3 = root->p2;
+                        root->ch1 = p->ch1;
+                        root->p2 = p->p2;
+                        root->p1 = p->p1;
+                        root->val1 = p->val1;
+                        increased = false;
+                        root->is2no = false;
                         delete p;
-                        return raiz;
+                        return root;
                     } else {
-                        No* novo = new No();
-                        novo->ch1 = raiz->ch2;
-                        novo->val1 = raiz->val2;
-                        novo->p2 = raiz->p3;
-                        novo->p1 = raiz->p2;
-                        No* nraiz = new No();
-                        nraiz->ch1 = raiz->ch1;
-                        nraiz->val2 = raiz->val1;
-                        nraiz->p2 = novo;
-                        nraiz->p1 = raiz;
-                        raiz->ch1 = p->ch1;
-                        raiz->val1 = p->val1;
-                        raiz->ch2 = "";
-                        raiz->val2 = val;
-                        raiz->p3 = nullptr;
-                        raiz->p2 = p->p2;
-                        novo->is2no = raiz->is2no = nraiz->is2no = true;
-                        cresceu = true;
+                        No* newNode = new No();
+                        newNode->ch1 = root->ch2;
+                        newNode->val1 = root->val2;
+                        newNode->p2 = root->p3;
+                        newNode->p1 = root->p2;
+                        No* nroot = new No();
+                        nroot->ch1 = root->ch1;
+                        nroot->val2 = root->val1;
+                        nroot->p2 = newNode;
+                        nroot->p1 = root;
+                        root->ch1 = p->ch1;
+                        root->val1 = p->val1;
+                        root->ch2 = "";
+                        root->val2 = val;
+                        root->p3 = nullptr;
+                        root->p2 = p->p2;
+                        newNode->is2no = root->is2no = nroot->is2no = true;
+                        increased = true;
                         delete p;
-                        return nraiz;
+                        return nroot;
                     }
                 }
                 else{
-                    raiz->p1 = p;
+                    root->p1 = p;
                     /*if (raiz->ch1 == "d" && raiz->p2->is2no == false && raiz->p2->p3->is2no == false){
                         std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
                         std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
@@ -575,43 +645,43 @@ private:
                         std::cout << "p2->p3 ch1 e: " << raiz->p2->p3->ch1 << std::endl;
                         std::cout << "p2->p3 ch2 e: " << raiz->p2->p3->ch2 << std::endl;
                     }*///teste do 14º
-                    return raiz;
+                    return root;
                 }
             }
-            else if (raiz->is2no || raiz->ch2 > key) {
-                No* p = add23(raiz->p2, key, val);
-                if (cresceu) {
+            else if (root->is2no || root->ch2 > key) {
+                No* p = add23(root->p2, key, val);
+                if (increased) {
                     if (p->is2no) {
-                        raiz->ch2 = p->ch1;
-                        raiz->val2 = p->val1;
-                        raiz->p3 = p->p2;
-                        raiz->p2 = p->p1;
-                        cresceu = false;
+                        root->ch2 = p->ch1;
+                        root->val2 = p->val1;
+                        root->p3 = p->p2;
+                        root->p2 = p->p1;
+                        increased = false;
                         delete p;
-                        raiz->is2no = false;
+                        root->is2no = false;
                        /* std::cout << " ch1 da raiz: " << raiz->ch1 << " ch2 da raiz: " << raiz->ch2 << std::endl;
                         std::cout << " ch1 p1: " << raiz->p1->ch1 << std::endl;
                         std::cout << " ch1 p2: " << raiz->p2->ch1 << std::endl;
                         std::cout << " ch1 p3: " << raiz->p3->ch1 << std::endl;*/
-                        return raiz;
+                        return root;
                     }
                     else {
-                        No* novo = new No();
-                        novo->ch1 = raiz->ch2;
-                        novo->val1 = raiz->val2;
-                        novo->p2 = raiz->p3;
-                        novo->p1 = raiz->p2;
-                        raiz->ch2 = p->ch1;
-                        raiz->val2 = p->val1;
-                        raiz->p3 = p->p2;
-                        raiz->p2 = novo;
-                        cresceu = true;
+                        No* newNode = new No();
+                        newNode->ch1 = root->ch2;
+                        newNode->val1 = root->val2;
+                        newNode->p2 = root->p3;
+                        newNode->p1 = root->p2;
+                        root->ch2 = p->ch1;
+                        root->val2 = p->val1;
+                        root->p3 = p->p2;
+                        root->p2 = newNode;
+                        increased = true;
                         delete p;
-                        return raiz;
+                        return root;
                     }
                 }
                 else {
-                    raiz->p2 = p;
+                    root->p2 = p;
                     /*if (raiz->ch1 == "b" && raiz->ch2 == "d"){
                         std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
                         std::cout << "raiz ch2 e: " << raiz->ch2 << std::endl;
@@ -654,158 +724,156 @@ private:
                         std::cout << "p2->p3 ch2 e: " << raiz->p2->p3->ch2 << std::endl;
                     }*///teste do 10º
 
-                    return raiz;
+                    return root;
                 }
             }
             else {
-               /* std::cout << "insere no p3 a palavra: " << raiz->p3 << std::endl;*/
-                No* p = add23(raiz->p3, key, val);
-                if (cresceu) {
-                    No* nraiz = new No();
-                    No* novo = new No();
-                    nraiz->ch1 = raiz->ch2;
-                    nraiz->val1 = raiz->val2;
-                    novo->ch1 = p->ch1;
-                    novo->p1 = p->p1;
-                    novo->p2 = p->p2;
-                    raiz->ch2 = "";
-                    raiz->val2 = Item::None();
-                    raiz->p3 = nullptr;
-                    nraiz->p1 = raiz;
-                    nraiz->p2 = novo;
+                /* std::cout << "insere no p3 a palavra: " << raiz->p3 << std::endl;*/
+                No* p = add23(root->p3, key, val);
+                if (increased) {
+                    No* nroot = new No();
+                    No* newNode = new No();
+                    nroot->ch1 = root->ch2;
+                    nroot->val1 = root->val2;
+                    newNode->ch1 = p->ch1;
+                    newNode->p1 = p->p1;
+                    newNode->p2 = p->p2;
+                    root->ch2 = "";
+                    root->val2 = Item::None();
+                    root->p3 = nullptr;
+                    nroot->p1 = root;
+                    nroot->p2 = newNode;
                     delete(p);
-                    cresceu = true;
-                    nraiz->is2no = raiz->is2no = novo->is2no;
-                    /*if(nraiz->ch1 == "d"){
-                        std::cout << "raiz ch1 e: " << nraiz->ch1 << std::endl;
-                        std::cout << "p1 ch1 e: " << nraiz->p1->ch1 << std::endl;
-                        std::cout << "p2 ch1 e: " << nraiz->p2->ch1 << std::endl;
-                        std::cout << "p1->p1 ch1 e: " << nraiz->p1->p1->ch1 << std::endl;
-                        std::cout << "p1->p2 ch1 e: " << nraiz->p1->p2->ch1 << std::endl;
-                        std::cout << "p2->p1 ch1 e: " << nraiz->p2->p1->ch1 << std::endl;
-                        std::cout << "p2->p2 ch1 e: " << nraiz->p2->p2->ch1 << std::endl;
+                    increased = true;
+                    nroot->is2no = root->is2no = newNode->is2no;
+                    /*if(nroot->ch1 == "d"){
+                        std::cout << "raiz ch1 e: " << nroot->ch1 << std::endl;
+                        std::cout << "p1 ch1 e: " << nroot->p1->ch1 << std::endl;
+                        std::cout << "p2 ch1 e: " << nroot->p2->ch1 << std::endl;
+                        std::cout << "p1->p1 ch1 e: " << nroot->p1->p1->ch1 << std::endl;
+                        std::cout << "p1->p2 ch1 e: " << nroot->p1->p2->ch1 << std::endl;
+                        std::cout << "p2->p1 ch1 e: " << nroot->p2->p1->ch1 << std::endl;
+                        std::cout << "p2->p2 ch1 e: " << nroot->p2->p2->ch1 << std::endl;
                     }*/
-                    return nraiz;
+                    return nroot;
                 }
                 else {
-                    raiz->p3 = p;
+                    root->p3 = p;
                     /*std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
                     std::cout << "raiz ch2 e: " << raiz->ch2 << std::endl;
                     std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
                     std::cout << "p2 ch1 e: " << raiz->p2->ch1 << std::endl;
                     std::cout << "p3 ch1 e: " << raiz->p3->ch1 << std::endl;
                     std::cout << "p3 ch2 e: " << raiz->p3->ch2 << std::endl;*///teste do 6º
-                    return raiz;
+                    return root;
 
                 }
             }
         }
         else { // raiz is a leaf
-            if (raiz->is2no) {
-                if (raiz->ch1 > key) {
-                    raiz->ch2 = raiz->ch1;
-                    raiz->val2 = raiz->val1;
-                    raiz->ch1 = key;
-                    raiz->val1 = val;
-                    raiz->is2no = false;
-                    cresceu = false;
+            if (root->is2no) {
+                if (root->ch1 > key) {
+                    root->ch2 = root->ch1;
+                    root->val2 = root->val1;
+                    root->ch1 = key;
+                    root->val1 = val;
+                    root->is2no = false;
+                    increased = false;
                     /*std::cout << raiz->ch1 << "--e--" << raiz->ch2 << std::endl;*///teste 2º
-                    return raiz;
+                    return root;
                 }
                 else {
-                    raiz->ch2 = key;
-                    raiz->val2 = val;
-                    raiz->is2no = false;
-                    cresceu = false;
+                    root->ch2 = key;
+                    root->val2 = val;
+                    root->is2no = false;
+                    increased = false;
                     /*std::cout << "ch1: " << raiz->ch1 << std::endl;
                     std::cout << "ch2: " << raiz->ch2 << std::endl;*/
-                    return raiz;
+                    return root;
                 }
             }
             else { // raiz is a 3 node
-                if (key < raiz->ch1) {
-                    No* novo = new No();
-                    No* nraiz = new No();
-                    novo->ch1 = raiz->ch2;
-                    novo->val1 = raiz->val2;
-                    novo->p2 = raiz->p3;
-                    nraiz->ch1 = raiz->ch1;
-                    nraiz->val1 = raiz->val1;
-                    raiz->ch1 = key;
-                    raiz->val1 = val;
-                    raiz->ch2 = "";
-                    raiz->val2 = val;
-                    nraiz->p1 = raiz;
-                    nraiz->p2 = novo;
-                    cresceu = true;
-                    raiz->is2no = nraiz->is2no = novo->is2no = true;
-                    return nraiz;
+                if (key < root->ch1) {
+                    No* newNode = new No();
+                    No* nroot = new No();
+                    newNode->ch1 = root->ch2;
+                    newNode->val1 = root->val2;
+                    newNode->p2 = root->p3;
+                    nroot->ch1 = root->ch1;
+                    nroot->val1 = root->val1;
+                    root->ch1 = key;
+                    root->val1 = val;
+                    root->ch2 = "";
+                    root->val2 = val;
+                    nroot->p1 = root;
+                    nroot->p2 = newNode;
+                    increased = true;
+                    root->is2no = nroot->is2no = newNode->is2no = true;
+                    return nroot;
                 }
-                else if (key < raiz->ch2) {
-                    No* novo = new No();
-                    No* nraiz = new No();
-                    novo->ch1 = raiz->ch2;
-                    novo->val1 = raiz->val2;
-                    nraiz->ch1 = key;
-                    nraiz->val1 = val;
-                    raiz->ch2 = "";
-                    raiz->val2 = val.None();
-                    nraiz->p1 = raiz;
-                    nraiz->p2 = novo;
-                    nraiz->p3 = nullptr;
-                    cresceu = true;
-                    raiz->is2no = nraiz->is2no = novo->is2no = true;
-                   /* std::cout << nraiz->ch1 << " essa e a raiz" << std::endl;
-                    std::cout << nraiz->p1->ch1 << " essa e o ch1 do p1" << std::endl;
-                    std::cout << nraiz->p2->ch1 << " essa e o ch1 do p2" << std::endl;*/ //teste do 3º
-                    return nraiz;
-                } else {
-                    No* novo = new No();
-                    No* nraiz = new No();
-                    novo->ch1 = key;
-                    novo->val1 = val;
-                    nraiz->ch1 = raiz->ch2;
-                    nraiz->val1 = raiz->val2;
-                    raiz->ch2 = "";
-                    raiz->val2 = val;
-                    nraiz->p1 = raiz;
-                    nraiz->p2 = novo;
-                    cresceu = true;
-                    raiz->is2no = nraiz->is2no = novo->is2no = true;
-                    return nraiz;
+                else if (key < root->ch2) {
+                    No* newNode = new No();
+                    No* nroot = new No();
+                    newNode->ch1 = root->ch2;
+                    newNode->val1 = root->val2;
+                    nroot->ch1 = key;
+                    nroot->val1 = val;
+                    root->ch2 = "";
+                    root->val2 = val.None();
+                    nroot->p1 = root;
+                    nroot->p2 = newNode;
+                    nroot->p3 = nullptr;
+                    increased = true;
+                    root->is2no = nroot->is2no = newNode->is2no = true;
+                   /* std::cout << nroot->ch1 << " essa e a raiz" << std::endl;
+                    std::cout << nroot->p1->ch1 << " essa e o ch1 do p1" << std::endl;
+                    std::cout << nroot->p2->ch1 << " essa e o ch1 do p2" << std::endl;*/ //teste do 3º
+                    return nroot;
+                }
+                else {
+                    No* newNode = new No();
+                    No* nroot = new No();
+                    newNode->ch1 = key;
+                    newNode->val1 = val;
+                    nroot->ch1 = root->ch2;
+                    nroot->val1 = root->val2;
+                    root->ch2 = "";
+                    root->val2 = val;
+                    nroot->p1 = root;
+                    nroot->p2 = newNode;
+                    increased = true;
+                    root->is2no = nroot->is2no = newNode->is2no = true;
+                    return nroot;
                 }
             }
         }
     }
 
-    Item get(No* root, const std::string& key) {
-        if (root == nullptr) {
-            // Key not found, return some default value or handle the case accordingly
-            return Item::None() ; // Assuming Item has a default constructor
+    Item get(No* root, std::string key) {
+        std::stack<No*> stack;
+        stack.push(root);
+
+        while (!stack.empty()) {
+            No* current = stack.top();
+            stack.pop();
+
+            if (current != nullptr) {
+                if (current->ch1 == key) {
+                    return current->val1;
+                }
+
+                if (!current->is2no && current->ch2 == key) {
+                    return current->val2;
+                }
+
+                stack.push(current->p1);
+                stack.push(current->p2);
+                stack.push(current->p3);
+            }
         }
 
-        if (root->p1 == nullptr) {
-            // Node is a leaf, check if the key matches
-            if (root->ch1 == key) {
-                return root->val1;
-            }
-            if (!root->is2no && root->ch2 == key) {
-                return root->val2;
-            }
-            // Key not found in the leaf node
-            return Item::None(); // Assuming Item has a default constructor
-        }
-
-        // Node is not a leaf, perform recursive search
-        if (key < root->ch1) {
-            return get(root->p1, key);
-        } else if (root->is2no || key < root->ch2) {
-            return get(root->p2, key);
-        } else {
-            return get(root->p3, key);
-        }
+        return Item::None();
     }
-
 
     void inorder(No* root) {
         if (root != nullptr) {
@@ -835,43 +903,341 @@ private:
     }
 
 public:
-    SymbolTable23() : raiz(nullptr) {}
+    SymbolTable23() : root(nullptr) {}
     void put(std::string key) {
         Item value = findValue(key);
-        raiz = add23(raiz, key, value);
+        root = add23(root, key, value);
     }
     void print() {
-        inorder(raiz);
-    }
-    void printtest() {
-        std::cout << raiz->p1->ch1 << std::endl;
+        inorder(root);
     }
     Item find(std::string& key){
-        return get(raiz, key);
+        return get(root, key);
     }
 
 };
 
-int main() {
-    cresceu = false;
-    SymbolTable23 table;
-    std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
-    std::ifstream inputFile(filePath);
-    if (!inputFile.is_open()) {
-        std::cout << "Failed to open the file." << std::endl;
-        return 1;
-    }
-    std::string line;
-    while (std::getline(inputFile, line)) {
-        std::stringstream ss(line);
-        std::string word;
+const bool RED = true;
+const bool BLACK = false;
 
-        while (ss >> word) {
-            table.put(word);
+class RBNode {
+public:
+    std::string key; // key
+    Item val; // associated data
+    RBNode* left; // left subtree
+    RBNode* right; // right subtree
+    int N; // # nodes in this subtree
+    bool color; // color of link from parent to this node
+
+    RBNode(std::string& key, Item val, int N, bool color) {
+        this->key = key;
+        this->val = val;
+        this->N = N;
+        this->color = color;
+        this->left = nullptr;
+        this->right = nullptr;
+    }
+};
+
+bool isRed(RBNode* x) {
+    if (x == nullptr)
+        return false;
+    return x->color == RED;
+}
+
+class SymbolTableRedBlack {
+private:
+    RBNode* root;
+
+    Item findValue(const std::string& key) {
+        Item value{};
+        value.occurrences = 1;
+        value.letters = key.size();
+        value.vowels = vowels(key);
+        return value;
+    }
+
+    RBNode* rotateLeft(RBNode* h) {
+        RBNode* x = h->right;
+        h->right = x->left;
+        x->left = h;
+        x->color = h->color;
+        h->color = RED;
+        x->N = h->N;
+        h->N = 1 + size(h->left) + size(h->right);
+        return x;
+    }
+
+    RBNode* rotateRight(RBNode* h) {
+        RBNode* x = h->left;
+        h->left = x->right;
+        x->right = h;
+        x->color = h->color;
+        h->color = RED;
+        x->N = h->N;
+        h->N = 1 + size(h->left) + size(h->right);
+        return x;
+    }
+
+    void flipColors(RBNode* h) {
+        h->color = !h->color;
+        h->left->color = !h->left->color;
+        h->right->color = !h->right->color;
+    }
+
+    int size(RBNode* x) {
+        if (x == nullptr)
+            return 0;
+        return x->N;
+    }
+
+    RBNode* put(RBNode* h, std::string key, Item val) {
+        if (h == nullptr)
+            return new RBNode(key, val, 1, RED);
+
+        int cmp = key.compare(h->key);
+        if (cmp < 0)
+            h->left = put(h->left, key, val);
+        else if (cmp > 0)
+            h->right = put(h->right, key, val);
+        else
+            h->val.occurrences += 1; // Increment occurrences when keys are equal
+
+        if (isRed(h->right) && !isRed(h->left))
+            h = rotateLeft(h);
+        if (isRed(h->left) && isRed(h->left->left))
+            h = rotateRight(h);
+        if (isRed(h->left) && isRed(h->right))
+            flipColors(h);
+
+        h->N = size(h->left) + size(h->right) + 1;
+        return h;
+    }
+
+    void print(RBNode* node) {
+        if (node == nullptr)
+            return;
+
+        print(node->left);
+        std::cout << "Key: " << node->key << ", Occurrences: " << node->val.occurrences << std::endl;
+        print(node->right);
+    }
+    void printByFloor(RBNode* root) {
+        if (root == nullptr) {
+            return;
+        }
+
+        std::queue<std::pair<RBNode*, int>> queue;
+        queue.push({root, 0});
+
+        int currentLevel = 0;
+
+        while (!queue.empty()) {
+            RBNode* current = queue.front().first;
+            int level = queue.front().second;
+            queue.pop();
+
+            if (level > currentLevel) {
+                std::cout << std::endl;
+                currentLevel = level;
+            }
+
+            // Print the current node with its level
+            std::cout << current->key << " (" << (current->color ? "R" : "B") << ") " << "Level: " << level << " ";
+
+            // Enqueue the left and right children with their levels
+            if (current->left != nullptr) {
+                queue.push({current->left, level + 1});
+            }
+            if (current->right != nullptr) {
+                queue.push({current->right, level + 1});
+            }
         }
     }
-    inputFile.close();
-    table.print();
+
+
+    RBNode* getRecursive(RBNode* node, const std::string& key) {
+        if (node == nullptr || node->key == key)
+            return node;
+        if (key < node->key)
+            return getRecursive(node->left, key);
+        else
+            return getRecursive(node->right, key);
+    }
+
+public:
+    SymbolTableRedBlack() {
+        root = nullptr;
+    }
+
+    void put(const std::string& key) {
+        Item val;
+        val = findValue(key);
+        root = put(root, key, val);
+        root->color = BLACK;
+    }
+    RBNode* get(const std::string& key) {
+        return getRecursive(root, key);
+    }
+
+    void display() {
+        print(root);
+    }
+};
+
+
+
+
+int main() {
+    using namespace std;
+    string choice;
+    cout << "Bem vindo ao segundo exercicio programa de MAC0323" << endl;
+    cout << "Escolha sua estrutura de dados dentre as seguintes opcoes: " << endl;
+    while (choice != "sair"){
+        int numconsultas;
+        cout << "Digite 'VO' para um vetor ordenado" << endl;
+        cout << "Digite 'ABB' para uma arvore de busca binaria" << endl;
+        cout << "Digite 'TR' para uma Treap" << endl;
+        cout << "Digite 'A23' para uma arvore balanceada 2-3" << endl;
+        cout << "Digite 'ARN' para uma arvore balanceada rubro-negro" << endl;
+        cout << "Digite 'sair' para finalizar o programa" << endl;
+        cout << "Nao diferenciamos maiusculas e minusculas" << endl;
+        cin >> choice;
+        cout << "Digite a quantidade de consultas a serem feitas (1-5)" << endl;
+        cin >> numconsultas;
+        cin.ignore();
+        vector<string> consultas(5);
+        for (int i = 0; i < numconsultas; ++i) {
+            cout << "Consulta [" << i + 1 << "]: ";
+            getline(cin, consultas[i]);
+            cout << endl;
+        }
+        for (char& c : choice) {
+            c = tolower(c);
+        }
+        if (choice == "sair") break;
+        else if (choice == "vo"){
+            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
+            std::ifstream inputFile(filePath);
+            if (!inputFile.is_open()) {
+                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                return 1;
+            }
+            SymbolTableOV table;
+            std::string line;
+            while (std::getline(inputFile, line)) {
+                std::stringstream ss(line);
+                std::string word;
+                while (ss >> word) {
+                    table.put(word);
+                }
+            }
+            table.print();
+            for (string consult : consultas) {
+                const char o = 'O';
+                if (consult == "F"){
+                    cout << endl;
+                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+                    table.mostOccurred();
+                    cout << endl;
+                }
+                else if (consult[0] == o) {
+                    cout << endl;
+                    string key;
+                    size_t spacePos = consult.find(' ');
+                    if (spacePos != std::string::npos) {
+                        // Extract the substring starting from the character after the space
+                        key = consult.substr(spacePos + 1);
+                    }
+                    Item value;
+                    value = table.get(key);
+                    cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
+                }
+                else if (consult == "L") {
+                    cout << endl;
+                    cout << "Palavra mais longa: ";
+                    table.longer();
+                    cout << endl;
+                }
+                else if (consult == "SR") {
+
+                }
+            }
+        }
+        else if (choice == "abb") {
+            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
+            std::ifstream inputFile(filePath);
+            if (!inputFile.is_open()) {
+                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                return 1;
+            }
+            SymbolTableBST table;
+            std::string line;
+            while (std::getline(inputFile, line)) {
+                std::stringstream ss(line);
+                std::string word;
+                while (ss >> word) {
+                    table.put(word);
+                }
+            }
+        }
+        else if (choice == "tr") {
+            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
+            std::ifstream inputFile(filePath);
+            if (!inputFile.is_open()) {
+                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                return 1;
+            }
+            SymbolTableTreap table;
+            std::string line;
+            while (std::getline(inputFile, line)) {
+                std::stringstream ss(line);
+                std::string word;
+                while (ss >> word) {
+                    table.put(word);
+                }
+            }
+        }
+        else if (choice == "a23") {
+            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
+            std::ifstream inputFile(filePath);
+            if (!inputFile.is_open()) {
+                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                return 1;
+            }
+            SymbolTable23 table;
+            std::string line;
+            while (std::getline(inputFile, line)) {
+                std::stringstream ss(line);
+                std::string word;
+                while (ss >> word) {
+                    table.put(word);
+                }
+            }
+        }
+        else if (choice == "arn") {
+            increased = false;
+            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
+            std::ifstream inputFile(filePath);
+            if (!inputFile.is_open()) {
+                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                return 1;
+            }
+            SymbolTableRedBlack table;
+            std::string line;
+            while (std::getline(inputFile, line)) {
+                std::stringstream ss(line);
+                std::string word;
+                while (ss >> word) {
+                    table.put(word);
+                }
+            }
+        }
+        else cout << "Valor invalido, insira um dentre as opcoes" << endl;
+
+        cout << "Fim do teste" << endl;
+        cout << endl;
+    }
 
 
     return 0;
