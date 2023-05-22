@@ -29,6 +29,13 @@ int vowels(const std::string& key){
     }
     return numVowels;
 }
+static Item findValue(const std::string& key){
+    Item value{};
+    value.occurrences = 1;
+    value.letters = key.size();
+    value.vowels = vowels(key);
+    return value;
+}
 
 struct BSTNode {
     std::string key;
@@ -38,15 +45,6 @@ struct BSTNode {
 
     BSTNode(std::string  k, Item v) : key(std::move(k)), value(v) , left(nullptr), right(nullptr) {}
 };
-
-static Item findValue(const std::string& key){
-    Item value{};
-    value.occurrences = 1;
-    value.letters = key.size();
-    value.vowels = vowels(key);
-    return value;
-}
-
 class SymbolTableBST {
 private:
     BSTNode* root;
@@ -75,6 +73,7 @@ private:
         else
             return getRecursive(node->right, key);
     }
+
     void traverseLeft(BSTNode* node) {
         if (node != nullptr) {
             traverseLeft(node->left);
@@ -82,6 +81,40 @@ private:
             traverseLeft(node->right);
         }
     }
+
+    void inorderTraversal(BSTNode* root, std::vector<BSTNode*>& maxNodes, int& maxOccurrences) {
+        if (root != nullptr) {
+            inorderTraversal(root->left, maxNodes, maxOccurrences);
+
+            // Check if the current node has more occurrences
+            if (root->value.occurrences > maxOccurrences) {
+                maxOccurrences = root->value.occurrences;
+                maxNodes.clear(); // Clear previous max nodes
+                maxNodes.push_back(root);
+            } else if (root->value.occurrences == maxOccurrences) {
+                maxNodes.push_back(root);
+            }
+
+            inorderTraversal(root->right, maxNodes, maxOccurrences);
+        }
+    }
+    void inorderTraversalL(BSTNode* root, std::vector<BSTNode*>& maxNodes, int& maxLetters) {
+        if (root != nullptr) {
+            inorderTraversalL(root->left, maxNodes, maxLetters);
+
+            // Check if the current node has more occurrences
+            if (root->value.letters > maxLetters) {
+                maxLetters = root->value.letters;
+                maxNodes.clear(); // Clear previous max nodes
+                maxNodes.push_back(root);
+            } else if (root->value.letters == maxLetters) {
+                maxNodes.push_back(root);
+            }
+
+            inorderTraversalL(root->right, maxNodes, maxLetters);
+        }
+    }
+
 
 public:
     SymbolTableBST() : root(nullptr) {}
@@ -101,13 +134,46 @@ public:
     void print(){
         traverseLeft(root);
     }
+
+    void mostOccurred() {
+        std::vector<BSTNode*> maxNodes;
+        int maxOccurrences = 0;
+
+        inorderTraversal(root, maxNodes, maxOccurrences);
+
+        if (maxNodes.empty()) {
+            std::cout << "The binary search tree is empty." << std::endl;
+        } else {
+            std::cout << "Nodes with the most occurrences:" << std::endl;
+            for (const auto& node : maxNodes) {
+                std::cout << "Key: " << node->key << ", ";
+                std::cout << "Occurrences: " << node->value.occurrences << std::endl;
+            }
+        }
+    }
+    void longer() {
+        std::vector<BSTNode*> maxNodes;
+        int maxLetters = 0;
+
+        inorderTraversalL(root, maxNodes, maxLetters);
+
+        if (maxNodes.empty()) {
+            std::cout << "The binary search tree is empty." << std::endl;
+        } else {
+            std::cout << "Nodes with the most occurrences:" << std::endl;
+            for (const auto& node : maxNodes) {
+                std::cout << "Key: " << node->key << ", ";
+                std::cout << "Letters: " << node->value.letters << std::endl;
+            }
+        }
+    }
+
 };
 
 struct VOEntry {
     std::string key;
     Item value{};
 };
-
 class SymbolTableOV {
 private:
     VOEntry* entries;
@@ -126,10 +192,10 @@ public:
             if (entries[0].key > key) return 0;
             else return 1;
         }
-        size_t start = 0;
-        size_t end = size;
+        int start = 0;
+        int end = size - 1;
         while(start <= end){
-            size_t mid = (start + end)/2;
+            int mid = (start + end)/2;
             if(entries[mid].key == key) return mid;
             if(entries[mid].key < key) start = mid + 1;
             else end = mid - 1;
@@ -204,7 +270,6 @@ public:
         }
     }
 
-
     void mostOccurred() {
         if (size == 0) {
             // Handle the case when the symbol table is empty
@@ -266,7 +331,6 @@ struct TreapNode {
 
     TreapNode(std::string k, Item v, int p) : key(std::move(k)), value(v), priority(p), left(nullptr), right(nullptr) {}
 };
-
 class SymbolTableTreap {
 private:
     TreapNode* root;
@@ -542,26 +606,26 @@ struct Node23{
     Node23* right; // rkey
 };
 */
-struct No {
+struct No23 {
     bool is2no;
     std::string ch1;
     Item val1;
     std::string ch2;
     Item val2;
-    No* p1;
-    No* p2;
-    No* p3;
-    No()
+    No23* p1;
+    No23* p2;
+    No23* p3;
+    No23()
             : is2no(true), ch1(""), val1(Item().None()), ch2(""), val2(Item().None()), p1(nullptr), p2(nullptr), p3(nullptr) {}
 };
 bool increased = false;
 class SymbolTable23 {
 private:
-    No* root;
+    No23* root;
 
-    No* add23(No* root, const std::string& key, const Item& val) {
+    No23* add23(No23* root, const std::string& key, const Item& val) {
         if (root == nullptr) {
-            root = new No();
+            root = new No23();
             root->ch1 = key;
             root->val1 = val;
             increased = true;
@@ -577,7 +641,7 @@ private:
         }
         if (root->p1 != nullptr) { // raiz is not a leaf
             if (root->ch1 > key) {
-                No* p = add23(root->p1, key, val);
+                No23* p = add23(root->p1, key, val);
                 if (increased) {
                     if (root->is2no) {
                         root->ch2 = root->ch1;
@@ -592,12 +656,12 @@ private:
                         delete p;
                         return root;
                     } else {
-                        No* newNode = new No();
+                        No23* newNode = new No23();
                         newNode->ch1 = root->ch2;
                         newNode->val1 = root->val2;
                         newNode->p2 = root->p3;
                         newNode->p1 = root->p2;
-                        No* nroot = new No();
+                        No23* nroot = new No23();
                         nroot->ch1 = root->ch1;
                         nroot->val2 = root->val1;
                         nroot->p2 = newNode;
@@ -649,7 +713,7 @@ private:
                 }
             }
             else if (root->is2no || root->ch2 > key) {
-                No* p = add23(root->p2, key, val);
+                No23* p = add23(root->p2, key, val);
                 if (increased) {
                     if (p->is2no) {
                         root->ch2 = p->ch1;
@@ -666,7 +730,7 @@ private:
                         return root;
                     }
                     else {
-                        No* newNode = new No();
+                        No23* newNode = new No23();
                         newNode->ch1 = root->ch2;
                         newNode->val1 = root->val2;
                         newNode->p2 = root->p3;
@@ -729,10 +793,10 @@ private:
             }
             else {
                 /* std::cout << "insere no p3 a palavra: " << raiz->p3 << std::endl;*/
-                No* p = add23(root->p3, key, val);
+                No23* p = add23(root->p3, key, val);
                 if (increased) {
-                    No* nroot = new No();
-                    No* newNode = new No();
+                    No23* nroot = new No23();
+                    No23* newNode = new No23();
                     nroot->ch1 = root->ch2;
                     nroot->val1 = root->val2;
                     newNode->ch1 = p->ch1;
@@ -794,8 +858,8 @@ private:
             }
             else { // raiz is a 3 node
                 if (key < root->ch1) {
-                    No* newNode = new No();
-                    No* nroot = new No();
+                    No23* newNode = new No23();
+                    No23* nroot = new No23();
                     newNode->ch1 = root->ch2;
                     newNode->val1 = root->val2;
                     newNode->p2 = root->p3;
@@ -812,8 +876,8 @@ private:
                     return nroot;
                 }
                 else if (key < root->ch2) {
-                    No* newNode = new No();
-                    No* nroot = new No();
+                    No23* newNode = new No23();
+                    No23* nroot = new No23();
                     newNode->ch1 = root->ch2;
                     newNode->val1 = root->val2;
                     nroot->ch1 = key;
@@ -831,8 +895,8 @@ private:
                     return nroot;
                 }
                 else {
-                    No* newNode = new No();
-                    No* nroot = new No();
+                    No23* newNode = new No23();
+                    No23* nroot = new No23();
                     newNode->ch1 = key;
                     newNode->val1 = val;
                     nroot->ch1 = root->ch2;
@@ -849,12 +913,12 @@ private:
         }
     }
 
-    Item get(No* root, std::string key) {
-        std::stack<No*> stack;
+    Item get(No23* root, std::string key) {
+        std::stack<No23*> stack;
         stack.push(root);
 
         while (!stack.empty()) {
-            No* current = stack.top();
+            No23* current = stack.top();
             stack.pop();
 
             if (current != nullptr) {
@@ -875,7 +939,7 @@ private:
         return Item::None();
     }
 
-    void inorder(No* root) {
+    void inorder(No23* root) {
         if (root != nullptr) {
             if (root->p1 == nullptr) { // Node is a leaf
                 std::cout << "key: " << root->ch1 << std::endl;
@@ -1093,7 +1157,7 @@ int main() {
     string choice;
     cout << "Bem vindo ao segundo exercicio programa de MAC0323" << endl;
     cout << "Escolha sua estrutura de dados dentre as seguintes opcoes: " << endl;
-    while (choice != "sair"){
+    while (true){
         int numconsultas;
         cout << "Digite 'VO' para um vetor ordenado" << endl;
         cout << "Digite 'ABB' para uma arvore de busca binaria" << endl;
@@ -1103,6 +1167,7 @@ int main() {
         cout << "Digite 'sair' para finalizar o programa" << endl;
         cout << "Nao diferenciamos maiusculas e minusculas" << endl;
         cin >> choice;
+        if (choice == "sair") break;
         cout << "Digite a quantidade de consultas a serem feitas (1-5)" << endl;
         cin >> numconsultas;
         cin.ignore();
@@ -1132,15 +1197,16 @@ int main() {
                     table.put(word);
                 }
             }
-            table.print();
             for (string consult : consultas) {
                 const char o = 'O';
+                // Acha as palavras com maiores ocorrências no texto
                 if (consult == "F"){
                     cout << endl;
                     cout << "Maior(es) ocorrencia(s) no texto: " << endl;
                     table.mostOccurred();
                     cout << endl;
                 }
+                // Verifica quantas vezes a palavra dada está no texto
                 else if (consult[0] == o) {
                     cout << endl;
                     string key;
@@ -1151,7 +1217,8 @@ int main() {
                     }
                     Item value;
                     value = table.get(key);
-                    cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
+                    if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                    else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
                 }
                 else if (consult == "L") {
                     cout << endl;
@@ -1180,6 +1247,35 @@ int main() {
                     table.put(word);
                 }
             }
+            for (string consult : consultas) {
+                const char o = 'O';
+                // Acha as palavras com maiores ocorrências no texto
+                if (consult == "F") {
+                    cout << endl;
+                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+                    table.mostOccurred();
+                    cout << endl;
+                }
+                else if (consult[0] == o) {
+                    cout << endl;
+                    string key;
+                    size_t spacePos = consult.find(' ');
+                    if (spacePos != std::string::npos) {
+                        // Extract the substring starting from the character after the space
+                        key = consult.substr(spacePos + 1);
+                    }
+                    Item value;
+                    value = table.get(key);
+                    if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                    else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
+                }
+                else if (consult == "L") {
+                    cout << endl;
+                    cout << "Palavra mais longa: ";
+                    table.longer();
+                    cout << endl;
+                }
+            }
         }
         else if (choice == "tr") {
             std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
@@ -1195,6 +1291,39 @@ int main() {
                 std::string word;
                 while (ss >> word) {
                     table.put(word);
+                }
+            }
+            for (string consult : consultas) {
+                const char o = 'O';
+                // Acha as palavras com maiores ocorrências no texto
+                if (consult == "F"){
+                    cout << endl;
+                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+                    //table.mostOccurred();
+                    cout << endl;
+                }
+                    // Verifica quantas vezes a palavra dada está no texto
+                else if (consult[0] == o) {
+                    cout << endl;
+                    string key;
+                    size_t spacePos = consult.find(' ');
+                    if (spacePos != std::string::npos) {
+                        // Extract the substring starting from the character after the space
+                        key = consult.substr(spacePos + 1);
+                    }
+                    Item value;
+                    value = table.get(key);
+                    if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                    else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
+                }
+                else if (consult == "L") {
+                    cout << endl;
+                    cout << "Palavra mais longa: ";
+                    //table.longer();
+                    cout << endl;
+                }
+                else if (consult == "SR") {
+
                 }
             }
         }
@@ -1214,6 +1343,39 @@ int main() {
                     table.put(word);
                 }
             }
+            for (string consult : consultas) {
+                const char o = 'O';
+                // Acha as palavras com maiores ocorrências no texto
+                if (consult == "F"){
+                    cout << endl;
+                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+                    //table.mostOccurred();
+                    cout << endl;
+                }
+                    // Verifica quantas vezes a palavra dada está no texto
+                else if (consult[0] == o) {
+                    cout << endl;
+                    string key;
+                    size_t spacePos = consult.find(' ');
+                    if (spacePos != std::string::npos) {
+                        // Extract the substring starting from the character after the space
+                        key = consult.substr(spacePos + 1);
+                    }
+                    Item value;
+                    value = table.find(key);
+                    if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                    else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
+                }
+                else if (consult == "L") {
+                    cout << endl;
+                    cout << "Palavra mais longa: ";
+                    //table.longer();
+                    cout << endl;
+                }
+                else if (consult == "SR") {
+
+                }
+            }
         }
         else if (choice == "arn") {
             increased = false;
@@ -1230,6 +1392,39 @@ int main() {
                 std::string word;
                 while (ss >> word) {
                     table.put(word);
+                }
+            }
+            for (string consult : consultas) {
+                const char o = 'O';
+                // Acha as palavras com maiores ocorrências no texto
+                if (consult == "F"){
+                    cout << endl;
+                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+                    //table.mostOccurred();
+                    cout << endl;
+                }
+                    // Verifica quantas vezes a palavra dada está no texto
+                else if (consult[0] == o) {
+                    cout << endl;
+                    string key;
+                    size_t spacePos = consult.find(' ');
+                    if (spacePos != std::string::npos) {
+                        // Extract the substring starting from the character after the space
+                        key = consult.substr(spacePos + 1);
+                    }
+                    RBNode* node;
+                    node = table.get(key);
+                    if (node->val.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                    else cout << "A palavra " << key << " aparece " << node->val.occurrences << " vezes no texto" << endl;
+                }
+                else if (consult == "L") {
+                    cout << endl;
+                    cout << "Palavra mais longa: ";
+                    //table.longer();
+                    cout << endl;
+                }
+                else if (consult == "SR") {
+
                 }
             }
         }
