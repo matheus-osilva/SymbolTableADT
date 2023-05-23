@@ -6,6 +6,7 @@
 #include <random>
 #include <stack>
 #include <queue>
+#include <unordered_set>
 
 struct Item {
     int occurrences;
@@ -19,6 +20,17 @@ struct Item {
         return value;
     }
 };
+
+bool hasRepeatedLetters(const std::string& str) {
+    std::unordered_set<char> uniqueLetters;
+    for (char c : str) {
+        if (uniqueLetters.find(c) != uniqueLetters.end()) {
+            return true;  // Found a repeated letter
+        }
+        uniqueLetters.insert(c);
+    }
+    return false;  // No repeated letters found
+}
 
 //return the number of vowels in given string
 int vowels(const std::string& key){
@@ -56,7 +68,7 @@ void greatOccurrences(NodeType* root, std::vector<NodeType*>& maxNodes, int& max
 }
 
 template<typename NodeType>
-void greatLetters(NodeType* root, std::vector<NodeType*>& maxNodes, int& maxLetters) {
+void greatLetters(NodeType *root, std::vector<NodeType *> &maxNodes, int &maxLetters) {
     if (root != nullptr) {
         greatLetters(root->left, maxNodes, maxLetters);
 
@@ -73,6 +85,59 @@ void greatLetters(NodeType* root, std::vector<NodeType*>& maxNodes, int& maxLett
     }
 }
 
+template<typename NodeType>
+void sr(NodeType *root, std::vector<NodeType *> &maxNodes, int &maxLetters) {
+    if (root != nullptr) {
+        sr(root->left, maxNodes, maxLetters);
+
+        // Check if the current node has more occurrences
+        if (root->value.letters > maxLetters) {
+            if(!hasRepeatedLetters(root->key)){
+                maxLetters = root->value.letters;
+                maxNodes.clear(); // Clear previous max nodes
+                maxNodes.push_back(root);
+            }
+
+        } else if (root->value.letters == maxLetters) {
+            maxNodes.push_back(root);
+        }
+
+        sr(root->right, maxNodes, maxLetters);
+    }
+}
+
+template<typename NodeType>
+void vd(NodeType *root, std::vector<NodeType *> &minNodes, int &minLetters) {
+    if (root != nullptr) {
+        vd(root->left, minNodes, minLetters);
+        // Check if the current node has more occurrences
+        if (root->value.letters < minLetters) {
+            if(!hasRepeatedLetters(root->key)){
+                minLetters = root->value.letters;
+                minNodes.clear(); // Clear previous max nodes
+                minNodes.push_back(root);
+            }
+
+        } else if (root->value.letters == minLetters) {
+            minNodes.push_back(root);
+        }
+        vd(root->right, minNodes, minLetters);
+    }
+}
+
+template<typename NodeType>
+void mostVowels(std::vector<NodeType *> &minNodes) {
+    int greatNumOfVowels = 0;
+    for (NodeType* node : minNodes) {
+        if (node->value.vowels > greatNumOfVowels) {
+            greatNumOfVowels = node->value.vowels;
+            minNodes.clear(); // Clear previous max nodes
+            minNodes.push_back(node);
+        } else if (node->value.vowels == greatNumOfVowels) {
+            minNodes.push_back(node);
+        }
+    }
+}
 
 struct BSTNode {
     std::string key;
@@ -163,6 +228,37 @@ public:
             for (const auto& node : maxNodes) {
                 std::cout << "Palavra: " << node->key << ", ";
                 std::cout << "Numero de letras: " << node->value.letters << std::endl;
+            }
+        }
+    }
+
+    void longerwithnorepeatedletters() {
+        std::vector<BSTNode*> maxNodes;
+        int maxLetters = 0;
+
+        sr(root, maxNodes, maxLetters);
+
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
+            }
+        }
+    }
+
+    void shorterwithmostvowel() {
+        std::vector<BSTNode*> minNodes;
+        int lowVowels = root->value.vowels;
+        vd(root, minNodes, lowVowels);
+        mostVowels(minNodes);
+        if (minNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : minNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de vogais: " << node->value.vowels << std::endl;
             }
         }
     }
@@ -454,9 +550,23 @@ public:
             }
         }
     }
+    void longerwithnorepeatedletters() {
+        std::vector<TreapNode*> maxNodes;
+        int maxLetters = 0;
+
+        sr(root, maxNodes, maxLetters);
+
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
+            }
+        }
+    }
 
 };
-
 
 struct Node23 {
     bool is2no;
@@ -575,10 +685,10 @@ private:
                         increased = false;
                         delete p;
                         root->is2no = false;
-                       /* std::cout << " ch1 da raiz: " << raiz->ch1 << " ch2 da raiz: " << raiz->ch2 << std::endl;
-                        std::cout << " ch1 p1: " << raiz->p1->ch1 << std::endl;
-                        std::cout << " ch1 p2: " << raiz->p2->ch1 << std::endl;
-                        std::cout << " ch1 p3: " << raiz->p3->ch1 << std::endl;*/
+                        /* std::cout << " ch1 da raiz: " << raiz->ch1 << " ch2 da raiz: " << raiz->ch2 << std::endl;
+                         std::cout << " ch1 p1: " << raiz->p1->ch1 << std::endl;
+                         std::cout << " ch1 p2: " << raiz->p2->ch1 << std::endl;
+                         std::cout << " ch1 p3: " << raiz->p3->ch1 << std::endl;*/
                         return root;
                     }
                     else {
@@ -741,9 +851,9 @@ private:
                     nroot->p3 = nullptr;
                     increased = true;
                     root->is2no = nroot->is2no = newNode->is2no = true;
-                   /* std::cout << nroot->ch1 << " essa e a raiz" << std::endl;
-                    std::cout << nroot->p1->ch1 << " essa e o ch1 do p1" << std::endl;
-                    std::cout << nroot->p2->ch1 << " essa e o ch1 do p2" << std::endl;*/ //teste do 3º
+                    /* std::cout << nroot->ch1 << " essa e a raiz" << std::endl;
+                     std::cout << nroot->p1->ch1 << " essa e o ch1 do p1" << std::endl;
+                     std::cout << nroot->p2->ch1 << " essa e o ch1 do p2" << std::endl;*/ //teste do 3º
                     return nroot;
                 }
                 else {
@@ -1060,6 +1170,21 @@ public:
             }
         }
     }
+    void longerwithnorepeatedletters() {
+        std::vector<RBNode*> maxNodes;
+        int maxLetters = 0;
+
+        sr(root, maxNodes, maxLetters);
+
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
+            }
+        }
+    }
 };
 
 
@@ -1109,6 +1234,7 @@ int main() {
                     table.put(word);
                 }
             }
+            table.print();
             for (string consult : consultas) {
                 const char o = 'O';
                 // Acha as palavras com maiores ocorrências no texto
@@ -1118,7 +1244,7 @@ int main() {
                     table.mostOccurred();
                     cout << endl;
                 }
-                // Verifica quantas vezes a palavra dada está no texto
+                    // Verifica quantas vezes a palavra dada está no texto
                 else if (consult[0] == o) {
                     cout << endl;
                     string key;
@@ -1159,6 +1285,7 @@ int main() {
                     table.put(word);
                 }
             }
+            table.print();
             for (string consult : consultas) {
                 const char o = 'O';
                 // Acha as palavras com maiores ocorrências no texto
@@ -1185,6 +1312,18 @@ int main() {
                     cout << endl;
                     cout << "Palavra mais longa: ";
                     table.longer();
+                    cout << endl;
+                }
+                else if (consult == "SR") {
+                    cout << endl;
+                    cout << "Palavra mais longa sem letras repetidas: ";
+                    table.longerwithnorepeatedletters();
+                    cout << endl;
+                }
+                else if (consult == "VD") {
+                    cout << endl;
+                    cout << "Palavra mais curta sem repetição e com mais vogais: ";
+                    table.shorterwithmostvowel();
                     cout << endl;
                 }
             }
@@ -1235,7 +1374,10 @@ int main() {
                     cout << endl;
                 }
                 else if (consult == "SR") {
-
+                    cout << endl;
+                    cout << "Palavra mais longa sem letras repetidas: ";
+                    table.longerwithnorepeatedletters();
+                    cout << endl;
                 }
             }
         }
@@ -1255,6 +1397,7 @@ int main() {
                     table.put(word);
                 }
             }
+            table.print();
             for (string consult : consultas) {
                 const char o = 'O';
                 // Acha as palavras com maiores ocorrências no texto
@@ -1306,6 +1449,7 @@ int main() {
                     table.put(word);
                 }
             }
+            table.display();
             for (string consult : consultas) {
                 const char o = 'O';
                 // Acha as palavras com maiores ocorrências no texto
@@ -1336,7 +1480,10 @@ int main() {
                     cout << endl;
                 }
                 else if (consult == "SR") {
-
+                    cout << endl;
+                    cout << "Palavra mais longa sem letras repetidas: ";
+                    table.longerwithnorepeatedletters();
+                    cout << endl;
                 }
             }
         }
