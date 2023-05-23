@@ -37,6 +37,43 @@ static Item findValue(const std::string& key){
     return value;
 }
 
+template<typename NodeType>
+void greatOccurrences(NodeType* root, std::vector<NodeType*>& maxNodes, int& maxOccurrences) {
+    if (root != nullptr) {
+        greatOccurrences(root->left, maxNodes, maxOccurrences);
+
+        // Check if the current node has more occurrences
+        if (root->value.occurrences > maxOccurrences) {
+            maxOccurrences = root->value.occurrences;
+            maxNodes.clear(); // Clear previous max nodes
+            maxNodes.push_back(root);
+        } else if (root->value.occurrences == maxOccurrences) {
+            maxNodes.push_back(root);
+        }
+
+        greatOccurrences(root->right, maxNodes, maxOccurrences);
+    }
+}
+
+template<typename NodeType>
+void greatLetters(NodeType* root, std::vector<NodeType*>& maxNodes, int& maxLetters) {
+    if (root != nullptr) {
+        greatLetters(root->left, maxNodes, maxLetters);
+
+        // Check if the current node has more occurrences
+        if (root->value.letters > maxLetters) {
+            maxLetters = root->value.letters;
+            maxNodes.clear(); // Clear previous max nodes
+            maxNodes.push_back(root);
+        } else if (root->value.letters == maxLetters) {
+            maxNodes.push_back(root);
+        }
+
+        greatLetters(root->right, maxNodes, maxLetters);
+    }
+}
+
+
 struct BSTNode {
     std::string key;
     Item value;
@@ -82,40 +119,6 @@ private:
         }
     }
 
-    void inorderTraversal(BSTNode* root, std::vector<BSTNode*>& maxNodes, int& maxOccurrences) {
-        if (root != nullptr) {
-            inorderTraversal(root->left, maxNodes, maxOccurrences);
-
-            // Check if the current node has more occurrences
-            if (root->value.occurrences > maxOccurrences) {
-                maxOccurrences = root->value.occurrences;
-                maxNodes.clear(); // Clear previous max nodes
-                maxNodes.push_back(root);
-            } else if (root->value.occurrences == maxOccurrences) {
-                maxNodes.push_back(root);
-            }
-
-            inorderTraversal(root->right, maxNodes, maxOccurrences);
-        }
-    }
-    void inorderTraversalL(BSTNode* root, std::vector<BSTNode*>& maxNodes, int& maxLetters) {
-        if (root != nullptr) {
-            inorderTraversalL(root->left, maxNodes, maxLetters);
-
-            // Check if the current node has more occurrences
-            if (root->value.letters > maxLetters) {
-                maxLetters = root->value.letters;
-                maxNodes.clear(); // Clear previous max nodes
-                maxNodes.push_back(root);
-            } else if (root->value.letters == maxLetters) {
-                maxNodes.push_back(root);
-            }
-
-            inorderTraversalL(root->right, maxNodes, maxLetters);
-        }
-    }
-
-
 public:
     SymbolTableBST() : root(nullptr) {}
 
@@ -138,16 +141,13 @@ public:
     void mostOccurred() {
         std::vector<BSTNode*> maxNodes;
         int maxOccurrences = 0;
-
-        inorderTraversal(root, maxNodes, maxOccurrences);
-
+        greatOccurrences(root, maxNodes, maxOccurrences);
         if (maxNodes.empty()) {
-            std::cout << "The binary search tree is empty." << std::endl;
+            std::cout << "A arvore esta vazia" << std::endl;
         } else {
-            std::cout << "Nodes with the most occurrences:" << std::endl;
             for (const auto& node : maxNodes) {
-                std::cout << "Key: " << node->key << ", ";
-                std::cout << "Occurrences: " << node->value.occurrences << std::endl;
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de ocorrencias: " << node->value.occurrences << std::endl;
             }
         }
     }
@@ -155,15 +155,14 @@ public:
         std::vector<BSTNode*> maxNodes;
         int maxLetters = 0;
 
-        inorderTraversalL(root, maxNodes, maxLetters);
+        greatLetters(root, maxNodes, maxLetters);
 
         if (maxNodes.empty()) {
-            std::cout << "The binary search tree is empty." << std::endl;
+            std::cout << "A arvore esta vazia" << std::endl;
         } else {
-            std::cout << "Nodes with the most occurrences:" << std::endl;
             for (const auto& node : maxNodes) {
-                std::cout << "Key: " << node->key << ", ";
-                std::cout << "Letters: " << node->value.letters << std::endl;
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
             }
         }
     }
@@ -427,205 +426,58 @@ public:
         }
     }
 
-    void printTree() {
-        traverseInOrder(root);
+    void mostOccurred() {
+        std::vector<TreapNode*> maxNodes;
+        int maxOccurrences = 0;
+        greatOccurrences(root, maxNodes, maxOccurrences);
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de ocorrencias: " << node->value.occurrences << std::endl;
+            }
+        }
     }
+    void longer() {
+        std::vector<TreapNode*> maxNodes;
+        int maxLetters = 0;
 
-    void print() {
-        inorder(root);
+        greatLetters(root, maxNodes, maxLetters);
+
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
+            }
+        }
     }
 
 };
 
-/*
+
 struct Node23 {
-    std::vector<std::string> keys;
-    std::vector<Item> values;
-    std::vector<Node23*> children;
-
-    Node23() {}
-
-    bool isLeaf() {
-        return children.empty();
-    }
-
-    bool isFull() {
-        return keys.size() == 2;
-    }
-};
-
-class SymbolTable23 {
-private:
-    Node23* root;
-
-    Item findValue(const std::string& key) {
-        Item value{};
-        value.occurrences = 1;
-        value.letters = key.size();
-        value.vowels = vowels(key);
-        return value;
-    }
-
-    void insertNonFull(Node23* node, const std::string& key, Item value) {
-        int i = node->keys.size() - 1;
-
-        if (node->isLeaf()) {
-            // Find the correct position to insert the key and value
-            while (i >= 0 && key < node->keys[i]) {
-                i--;
-            }
-            node->keys.insert(node->keys.begin() + i + 1, key);
-            node->values.insert(node->values.begin() + i + 1, value);
-        } else {
-            // Find the child to descend into
-            while (i >= 0 && key < node->keys[i]) {
-                i--;
-            }
-            i++;
-
-            if (node->children[i]->isFull()) {
-                splitChild(node, i);
-                if (key > node->keys[i]) {
-                    i++;
-                }
-            }
-
-            insertNonFull(node->children[i], key, value);
-        }
-    }
-
-    void splitChild(Node23* parent, int index) {
-        Node23* child = parent->children[index];
-        Node23* newNode = new Node23();
-
-        parent->keys.insert(parent->keys.begin() + index, child->keys[1]);
-        parent->values.insert(parent->values.begin() + index, child->values[1]);
-
-        parent->children.insert(parent->children.begin() + index + 1, newNode);
-
-        newNode->keys.push_back(child->keys[2]);
-        newNode->values.push_back(child->values[2]);
-
-        child->keys.erase(child->keys.begin() + 1, child->keys.end());
-        child->values.erase(child->values.begin() + 1, child->values.end());
-
-        if (!child->isLeaf()) {
-            newNode->children.push_back(child->children[3]);
-            newNode->children.push_back(child->children[4]);
-
-            child->children.erase(child->children.begin() + 3, child->children.end());
-        }
-    }
-
-
-    Item getRecursive(Node23* node, const std::string& key) {
-        int i = 0;
-        while (i < node->keys.size() && key > node->keys[i]) {
-            i++;
-        }
-
-        if (i < node->keys.size() && key == node->keys[i]) {
-            return node->values[i];
-        } else if (node->isLeaf()) {
-            return Item::None();
-        } else {
-            return getRecursive(node->children[i], key);
-        }
-    }
-
-    void traverseInOrder(Node23* node) {
-        if (node != nullptr) {
-            for (int i = 0; i < node->keys.size(); i++) {
-                traverseInOrder(node->children[i]);
-                std::cout << node->keys[i] << " : " << std::endl;
-            }
-            traverseInOrder(node->children[node->keys.size()]);
-        }
-    }
-    void inorder(Node23* root) {
-        if (root) {
-            if (root->isLeaf()) {
-                for (int i = 0; i < root->keys.size(); i++) {
-                    std::cout << "key: " << root->keys[i] << std::endl;
-                }
-            } else {
-                for (int i = 0; i < root->keys.size(); i++) {
-                    inorder(root->children[i]);
-                    std::cout << "key: " << root->keys[i] << std::endl;
-                }
-                inorder(root->children[root->keys.size()]);
-            }
-        }
-    }
-
-
-public:
-    SymbolTable23() : root(nullptr) {}
-
-    void put(const std::string& key) {
-        Item value = findValue(key);
-        if (root == nullptr) {
-            root = new Node23();
-            root->keys.push_back(key);
-            root->values.push_back(value);
-        } else {
-            if (root->isFull()) {
-                Node23* newRoot = new Node23();
-                newRoot->children.push_back(root);
-                splitChild(newRoot, 0);
-                root = newRoot;
-            }
-            insertNonFull(root, key, value);
-        }
-    }
-
-    Item get(const std::string& key) {
-        if (root == nullptr) {
-            return Item::None();
-        } else {
-            return getRecursive(root, key);
-        }
-    }
-
-    void printTree() {
-        traverseInOrder(root);
-    }
-    void print() {
-        inorder(root);
-    }
-};
-
-struct Node23{
-    bool is2node;
-    std::string lkey; //left key
-    std::string rkey; //right key --> rkey > lkey
-    Item lvalue; //left value
-    Item rvalue; //right value
-    Node23* left; // lkey
-    Node23* mid; // lkey and rkey
-    Node23* right; // rkey
-};
-*/
-struct No23 {
     bool is2no;
     std::string ch1;
     Item val1;
     std::string ch2;
     Item val2;
-    No23* p1;
-    No23* p2;
-    No23* p3;
-    No23()
+    Node23* p1;
+    Node23* p2;
+    Node23* p3;
+    Node23()
             : is2no(true), ch1(""), val1(Item().None()), ch2(""), val2(Item().None()), p1(nullptr), p2(nullptr), p3(nullptr) {}
 };
 bool increased = false;
 class SymbolTable23 {
 private:
-    No23* root;
+    Node23* root;
 
-    No23* add23(No23* root, const std::string& key, const Item& val) {
+    Node23* add23(Node23* root, const std::string& key, const Item& val) {
         if (root == nullptr) {
-            root = new No23();
+            root = new Node23();
             root->ch1 = key;
             root->val1 = val;
             increased = true;
@@ -641,7 +493,7 @@ private:
         }
         if (root->p1 != nullptr) { // raiz is not a leaf
             if (root->ch1 > key) {
-                No23* p = add23(root->p1, key, val);
+                Node23* p = add23(root->p1, key, val);
                 if (increased) {
                     if (root->is2no) {
                         root->ch2 = root->ch1;
@@ -656,12 +508,12 @@ private:
                         delete p;
                         return root;
                     } else {
-                        No23* newNode = new No23();
+                        Node23* newNode = new Node23();
                         newNode->ch1 = root->ch2;
                         newNode->val1 = root->val2;
                         newNode->p2 = root->p3;
                         newNode->p1 = root->p2;
-                        No23* nroot = new No23();
+                        Node23* nroot = new Node23();
                         nroot->ch1 = root->ch1;
                         nroot->val2 = root->val1;
                         nroot->p2 = newNode;
@@ -713,7 +565,7 @@ private:
                 }
             }
             else if (root->is2no || root->ch2 > key) {
-                No23* p = add23(root->p2, key, val);
+                Node23* p = add23(root->p2, key, val);
                 if (increased) {
                     if (p->is2no) {
                         root->ch2 = p->ch1;
@@ -730,7 +582,7 @@ private:
                         return root;
                     }
                     else {
-                        No23* newNode = new No23();
+                        Node23* newNode = new Node23();
                         newNode->ch1 = root->ch2;
                         newNode->val1 = root->val2;
                         newNode->p2 = root->p3;
@@ -793,10 +645,10 @@ private:
             }
             else {
                 /* std::cout << "insere no p3 a palavra: " << raiz->p3 << std::endl;*/
-                No23* p = add23(root->p3, key, val);
+                Node23* p = add23(root->p3, key, val);
                 if (increased) {
-                    No23* nroot = new No23();
-                    No23* newNode = new No23();
+                    Node23* nroot = new Node23();
+                    Node23* newNode = new Node23();
                     nroot->ch1 = root->ch2;
                     nroot->val1 = root->val2;
                     newNode->ch1 = p->ch1;
@@ -858,8 +710,8 @@ private:
             }
             else { // raiz is a 3 node
                 if (key < root->ch1) {
-                    No23* newNode = new No23();
-                    No23* nroot = new No23();
+                    Node23* newNode = new Node23();
+                    Node23* nroot = new Node23();
                     newNode->ch1 = root->ch2;
                     newNode->val1 = root->val2;
                     newNode->p2 = root->p3;
@@ -876,8 +728,8 @@ private:
                     return nroot;
                 }
                 else if (key < root->ch2) {
-                    No23* newNode = new No23();
-                    No23* nroot = new No23();
+                    Node23* newNode = new Node23();
+                    Node23* nroot = new Node23();
                     newNode->ch1 = root->ch2;
                     newNode->val1 = root->val2;
                     nroot->ch1 = key;
@@ -895,8 +747,8 @@ private:
                     return nroot;
                 }
                 else {
-                    No23* newNode = new No23();
-                    No23* nroot = new No23();
+                    Node23* newNode = new Node23();
+                    Node23* nroot = new Node23();
                     newNode->ch1 = key;
                     newNode->val1 = val;
                     nroot->ch1 = root->ch2;
@@ -913,12 +765,12 @@ private:
         }
     }
 
-    Item get(No23* root, std::string key) {
-        std::stack<No23*> stack;
+    Item get(Node23* root, std::string key) {
+        std::stack<Node23*> stack;
         stack.push(root);
 
         while (!stack.empty()) {
-            No23* current = stack.top();
+            Node23* current = stack.top();
             stack.pop();
 
             if (current != nullptr) {
@@ -939,7 +791,7 @@ private:
         return Item::None();
     }
 
-    void inorder(No23* root) {
+    void inorder(Node23* root) {
         if (root != nullptr) {
             if (root->p1 == nullptr) { // Node is a leaf
                 std::cout << "key: " << root->ch1 << std::endl;
@@ -958,12 +810,30 @@ private:
         }
     }
 
-    Item findValue(const std::string& key) {
-        Item value{};
-        value.occurrences = 1;
-        value.letters = key.size();
-        value.vowels = vowels(key);
-        return value;
+    void greatOccurrences23(Node23* root, std::vector<Node23*>& maxNodes, int& maxOccurrences) {
+        if (root != nullptr) {
+            greatOccurrences23(root->p1, maxNodes, maxOccurrences);
+
+            // Check if the current node has more occurrences
+            if (root->val1.occurrences > maxOccurrences) {
+                maxOccurrences = root->val1.occurrences;
+                maxNodes.clear(); // Clear previous max nodes
+                maxNodes.push_back(root);
+            } else if (root->val1.occurrences == maxOccurrences) {
+                maxNodes.push_back(root);
+            }
+            if (!root->is2no) {
+                if (root->val2.occurrences > maxOccurrences) {
+                    maxOccurrences = root->val2.occurrences;
+                    maxNodes.clear(); // Clear previous max nodes
+                    maxNodes.push_back(root);
+                } else if (root->val2.occurrences == maxOccurrences) {
+                    maxNodes.push_back(root);
+                }
+            }
+            greatOccurrences23(root->p2, maxNodes, maxOccurrences);
+            if (!root->is2no) greatOccurrences23(root->p3, maxNodes, maxOccurrences);
+        }
     }
 
 public:
@@ -978,6 +848,21 @@ public:
     Item find(std::string& key){
         return get(root, key);
     }
+    /*void mostOccurred() {
+        std::vector<Node23*> maxNodes;
+        int maxOccurrences = 0;
+        greatOccurrences23(root, maxNodes, maxOccurrences);
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node. << ", ";
+                std::cout << "Numero de ocorrencias: " << node->value.occurrences << std::endl;
+            }
+        }
+    }*/
+
+
 
 };
 
@@ -987,7 +872,7 @@ const bool BLACK = false;
 class RBNode {
 public:
     std::string key; // key
-    Item val; // associated data
+    Item value; // associated data
     RBNode* left; // left subtree
     RBNode* right; // right subtree
     int N; // # nodes in this subtree
@@ -995,7 +880,7 @@ public:
 
     RBNode(std::string& key, Item val, int N, bool color) {
         this->key = key;
-        this->val = val;
+        this->value = val;
         this->N = N;
         this->color = color;
         this->left = nullptr;
@@ -1065,7 +950,7 @@ private:
         else if (cmp > 0)
             h->right = put(h->right, key, val);
         else
-            h->val.occurrences += 1; // Increment occurrences when keys are equal
+            h->value.occurrences += 1; // Increment occurrences when keys are equal
 
         if (isRed(h->right) && !isRed(h->left))
             h = rotateLeft(h);
@@ -1083,7 +968,7 @@ private:
             return;
 
         print(node->left);
-        std::cout << "Key: " << node->key << ", Occurrences: " << node->val.occurrences << std::endl;
+        std::cout << "Key: " << node->key << ", Occurrences: " << node->value.occurrences << std::endl;
         print(node->right);
     }
     void printByFloor(RBNode* root) {
@@ -1147,6 +1032,34 @@ public:
     void display() {
         print(root);
     }
+    void mostOccurred() {
+        std::vector<RBNode*> maxNodes;
+        int maxOccurrences = 0;
+        greatOccurrences(root, maxNodes, maxOccurrences);
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de ocorrencias: " << node->value.occurrences << std::endl;
+            }
+        }
+    }
+    void longer() {
+        std::vector<RBNode*> maxNodes;
+        int maxLetters = 0;
+
+        greatLetters(root, maxNodes, maxLetters);
+
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
+            }
+        }
+    }
 };
 
 
@@ -1167,6 +1080,9 @@ int main() {
         cout << "Digite 'sair' para finalizar o programa" << endl;
         cout << "Nao diferenciamos maiusculas e minusculas" << endl;
         cin >> choice;
+        for (char& c : choice) {
+            c = tolower(c);
+        }
         if (choice == "sair") break;
         cout << "Digite a quantidade de consultas a serem feitas (1-5)" << endl;
         cin >> numconsultas;
@@ -1177,11 +1093,7 @@ int main() {
             getline(cin, consultas[i]);
             cout << endl;
         }
-        for (char& c : choice) {
-            c = tolower(c);
-        }
-        if (choice == "sair") break;
-        else if (choice == "vo"){
+        if (choice == "vo"){
             std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
             std::ifstream inputFile(filePath);
             if (!inputFile.is_open()) {
@@ -1299,7 +1211,7 @@ int main() {
                 if (consult == "F"){
                     cout << endl;
                     cout << "Maior(es) ocorrencia(s) no texto: " << endl;
-                    //table.mostOccurred();
+                    table.mostOccurred();
                     cout << endl;
                 }
                     // Verifica quantas vezes a palavra dada está no texto
@@ -1319,7 +1231,7 @@ int main() {
                 else if (consult == "L") {
                     cout << endl;
                     cout << "Palavra mais longa: ";
-                    //table.longer();
+                    table.longer();
                     cout << endl;
                 }
                 else if (consult == "SR") {
@@ -1400,7 +1312,7 @@ int main() {
                 if (consult == "F"){
                     cout << endl;
                     cout << "Maior(es) ocorrencia(s) no texto: " << endl;
-                    //table.mostOccurred();
+                    table.mostOccurred();
                     cout << endl;
                 }
                     // Verifica quantas vezes a palavra dada está no texto
@@ -1414,13 +1326,13 @@ int main() {
                     }
                     RBNode* node;
                     node = table.get(key);
-                    if (node->val.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
-                    else cout << "A palavra " << key << " aparece " << node->val.occurrences << " vezes no texto" << endl;
+                    if (node->value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                    else cout << "A palavra " << key << " aparece " << node->value.occurrences << " vezes no texto" << endl;
                 }
                 else if (consult == "L") {
                     cout << endl;
                     cout << "Palavra mais longa: ";
-                    //table.longer();
+                    table.longer();
                     cout << endl;
                 }
                 else if (consult == "SR") {
