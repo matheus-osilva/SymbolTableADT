@@ -107,35 +107,35 @@ void sr(NodeType *root, std::vector<NodeType *> &maxNodes, int &maxLetters) {
 }
 
 template<typename NodeType>
-void vd(NodeType *root, std::vector<NodeType *> &minNodes, int &minLetters) {
-    if (root != nullptr) {
-        vd(root->left, minNodes, minLetters);
-        // Check if the current node has more occurrences
-        if (root->value.letters < minLetters) {
-            if(!hasRepeatedLetters(root->key)){
-                minLetters = root->value.letters;
-                minNodes.clear(); // Clear previous max nodes
-                minNodes.push_back(root);
+void vd(std::vector<NodeType *> &minNodes) {
+    int maxLetters = 0;
+    for (auto it = minNodes.begin(); it != minNodes.end(); ) {
+        node = *it;
+        if (hasRepeatedLetters(node->key) || node->value.letters < maxLetters) {
+            it = minNodes.erase(it);
+        } else {
+            if (node->value.letters > maxLetters) {
+                maxLetters = node->value.letters;
             }
-
-        } else if (root->value.letters == minLetters) {
-            minNodes.push_back(root);
+            ++it;
         }
-        vd(root->right, minNodes, minLetters);
     }
 }
 
 template<typename NodeType>
-void mostVowels(std::vector<NodeType *> &minNodes) {
-    int greatNumOfVowels = 0;
-    for (NodeType* node : minNodes) {
-        if (node->value.vowels > greatNumOfVowels) {
-            greatNumOfVowels = node->value.vowels;
-            minNodes.clear(); // Clear previous max nodes
-            minNodes.push_back(node);
-        } else if (node->value.vowels == greatNumOfVowels) {
-            minNodes.push_back(node);
+void mostVowels(NodeType *root, std::vector<NodeType *> &maxNodes, int &maxVowels) {
+        if (root != nullptr) {
+        mostVowels(root->left, maxNodes, maxVowels);
+
+        // Check if the current node has more occurrences
+        if (root->value.vowels > maxVowels) {
+            maxVowels = root->value.vowels;
+            maxNodes.clear(); // Clear previous max nodes
+            maxNodes.push_back(root);
+        } else if (root->value.vowels == maxVowels) {
+            maxNodes.push_back(root);
         }
+        mostVowels(root->right, maxNodes, maxVowels);
     }
 }
 
@@ -179,7 +179,7 @@ private:
     void traverseLeft(BSTNode* node) {
         if (node != nullptr) {
             traverseLeft(node->left);
-            std::cout << node->key << " : " << std::endl;
+            std::cout << node->key << " : " << node->value.vowels << std::endl;
             traverseLeft(node->right);
         }
     }
@@ -251,8 +251,8 @@ public:
     void shorterwithmostvowel() {
         std::vector<BSTNode*> minNodes;
         int lowVowels = root->value.vowels;
-        vd(root, minNodes, lowVowels);
-        mostVowels(minNodes);
+        mostVowels(root, minNodes, lowVowels);
+        vd(minNodes);
         if (minNodes.empty()) {
             std::cout << "A arvore esta vazia" << std::endl;
         } else {
@@ -1270,7 +1270,7 @@ int main() {
             }
         }
         else if (choice == "abb") {
-            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
+            std::string filePath = R"(/home/bmac/matheusnz/Documentos/ep2mac0323/file.txt)";
             std::ifstream inputFile(filePath);
             if (!inputFile.is_open()) {
                 std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
