@@ -107,35 +107,88 @@ void sr(NodeType *root, std::vector<NodeType *> &maxNodes, int &maxLetters) {
 }
 
 template<typename NodeType>
-void vd(std::vector<NodeType *> &minNodes) {
-    int maxLetters = 0;
-    for (auto it = minNodes.begin(); it != minNodes.end(); ) {
-        node = *it;
-        if (hasRepeatedLetters(node->key) || node->value.letters < maxLetters) {
+void vd(std::vector<NodeType*>& minNodes) {
+    int lowestLetters = INT_MAX;
+    // Find the lowest value of letters
+    for (const auto& node : minNodes) {
+        if (node->value.letters < lowestLetters) {
+            lowestLetters = node->value.letters;
+        }
+    }
+    // Erase elements with letters greater than the lowest value
+    auto it = minNodes.begin();
+    while (it != minNodes.end()) {
+        if ((*it)->value.letters > lowestLetters) {
             it = minNodes.erase(it);
         } else {
-            if (node->value.letters > maxLetters) {
-                maxLetters = node->value.letters;
-            }
             ++it;
         }
     }
 }
 
+
+
 template<typename NodeType>
 void mostVowels(NodeType *root, std::vector<NodeType *> &maxNodes, int &maxVowels) {
-        if (root != nullptr) {
+    if (root != nullptr) {
         mostVowels(root->left, maxNodes, maxVowels);
 
-        // Check if the current node has more occurrences
-        if (root->value.vowels > maxVowels) {
+        // Check if the current node has more vowels
+        if (root->value.vowels > maxVowels && !hasRepeatedLetters(root->key)) {
             maxVowels = root->value.vowels;
             maxNodes.clear(); // Clear previous max nodes
             maxNodes.push_back(root);
-        } else if (root->value.vowels == maxVowels) {
+        } else if (root->value.vowels == maxVowels && !hasRepeatedLetters(root->key)) {
             maxNodes.push_back(root);
         }
         mostVowels(root->right, maxNodes, maxVowels);
+    }
+}
+
+template<typename TableType>
+void consultas_gerais(std::vector<std::string> consultas, TableType& table){
+    using namespace std;
+    for (string consult : consultas) {
+        const char o = 'O';
+        // Acha as palavras com maiores ocorrências no texto
+        if (consult == "F") {
+            cout << endl;
+            cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+            table.mostOccurred();
+            cout << endl;
+        }
+        else if (consult[0] == o) {
+            cout << endl;
+            string key;
+            size_t spacePos = consult.find(' ');
+            if (spacePos != std::string::npos) {
+                // Extract the substring starting from the character after the space
+                key = consult.substr(spacePos + 1);
+            }
+            Item value;
+            value = table.get(key);
+            if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+            else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
+        }
+        else if (consult == "L") {
+            cout << endl;
+            cout << "Palavra mais longa: ";
+            table.longer();
+            cout << endl;
+        }
+        else if (consult == "SR") {
+            cout << endl;
+            cout << "Palavra mais longa sem letras repetidas: ";
+            table.longerwithnorepeatedletters();
+            cout << endl;
+        }
+        else if (consult == "VD") {
+            cout << endl;
+            cout << "Palavra mais curta sem repeticao e com mais vogais: ";
+            table.shorterwithmostvowel();
+            cout << endl;
+        }
+        else break;
     }
 }
 
@@ -258,7 +311,7 @@ public:
         } else {
             for (const auto& node : minNodes) {
                 std::cout << "Palavra: " << node->key << ", ";
-                std::cout << "Numero de vogais: " << node->value.vowels << std::endl;
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
             }
         }
     }
@@ -565,7 +618,20 @@ public:
             }
         }
     }
-
+    void shorterwithmostvowel() {
+        std::vector<TreapNode*> minNodes;
+        int lowVowels = root->value.vowels;
+        mostVowels(root, minNodes, lowVowels);
+        vd(minNodes);
+        if (minNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : minNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
+            }
+        }
+    }
 };
 
 struct Node23 {
@@ -1185,6 +1251,20 @@ public:
             }
         }
     }
+    void shorterwithmostvowel() {
+        std::vector<RBNode*> minNodes;
+        int lowVowels = root->value.vowels;
+        mostVowels(root, minNodes, lowVowels);
+        vd(minNodes);
+        if (minNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : minNodes) {
+                std::cout << "Palavra: " << node->key << ", ";
+                std::cout << "Numero de letras: " << node->value.letters << std::endl;
+            }
+        }
+    }
 };
 
 
@@ -1234,7 +1314,6 @@ int main() {
                     table.put(word);
                 }
             }
-            table.print();
             for (string consult : consultas) {
                 const char o = 'O';
                 // Acha as palavras com maiores ocorrências no texto
@@ -1270,7 +1349,7 @@ int main() {
             }
         }
         else if (choice == "abb") {
-            std::string filePath = R"(/home/bmac/matheusnz/Documentos/ep2mac0323/file.txt)";
+            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
             std::ifstream inputFile(filePath);
             if (!inputFile.is_open()) {
                 std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
@@ -1285,48 +1364,7 @@ int main() {
                     table.put(word);
                 }
             }
-            table.print();
-            for (string consult : consultas) {
-                const char o = 'O';
-                // Acha as palavras com maiores ocorrências no texto
-                if (consult == "F") {
-                    cout << endl;
-                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
-                    table.mostOccurred();
-                    cout << endl;
-                }
-                else if (consult[0] == o) {
-                    cout << endl;
-                    string key;
-                    size_t spacePos = consult.find(' ');
-                    if (spacePos != std::string::npos) {
-                        // Extract the substring starting from the character after the space
-                        key = consult.substr(spacePos + 1);
-                    }
-                    Item value;
-                    value = table.get(key);
-                    if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
-                    else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
-                }
-                else if (consult == "L") {
-                    cout << endl;
-                    cout << "Palavra mais longa: ";
-                    table.longer();
-                    cout << endl;
-                }
-                else if (consult == "SR") {
-                    cout << endl;
-                    cout << "Palavra mais longa sem letras repetidas: ";
-                    table.longerwithnorepeatedletters();
-                    cout << endl;
-                }
-                else if (consult == "VD") {
-                    cout << endl;
-                    cout << "Palavra mais curta sem repetição e com mais vogais: ";
-                    table.shorterwithmostvowel();
-                    cout << endl;
-                }
-            }
+            consultas_gerais(consultas, table);
         }
         else if (choice == "tr") {
             std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
@@ -1344,42 +1382,7 @@ int main() {
                     table.put(word);
                 }
             }
-            for (string consult : consultas) {
-                const char o = 'O';
-                // Acha as palavras com maiores ocorrências no texto
-                if (consult == "F"){
-                    cout << endl;
-                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
-                    table.mostOccurred();
-                    cout << endl;
-                }
-                    // Verifica quantas vezes a palavra dada está no texto
-                else if (consult[0] == o) {
-                    cout << endl;
-                    string key;
-                    size_t spacePos = consult.find(' ');
-                    if (spacePos != std::string::npos) {
-                        // Extract the substring starting from the character after the space
-                        key = consult.substr(spacePos + 1);
-                    }
-                    Item value;
-                    value = table.get(key);
-                    if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
-                    else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
-                }
-                else if (consult == "L") {
-                    cout << endl;
-                    cout << "Palavra mais longa: ";
-                    table.longer();
-                    cout << endl;
-                }
-                else if (consult == "SR") {
-                    cout << endl;
-                    cout << "Palavra mais longa sem letras repetidas: ";
-                    table.longerwithnorepeatedletters();
-                    cout << endl;
-                }
-            }
+            consultas_gerais(consultas, table);
         }
         else if (choice == "a23") {
             std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
@@ -1449,17 +1452,15 @@ int main() {
                     table.put(word);
                 }
             }
-            table.display();
             for (string consult : consultas) {
                 const char o = 'O';
                 // Acha as palavras com maiores ocorrências no texto
-                if (consult == "F"){
+                if (consult == "F") {
                     cout << endl;
                     cout << "Maior(es) ocorrencia(s) no texto: " << endl;
                     table.mostOccurred();
                     cout << endl;
                 }
-                    // Verifica quantas vezes a palavra dada está no texto
                 else if (consult[0] == o) {
                     cout << endl;
                     string key;
@@ -1485,6 +1486,13 @@ int main() {
                     table.longerwithnorepeatedletters();
                     cout << endl;
                 }
+                else if (consult == "VD") {
+                    cout << endl;
+                    cout << "Palavra mais curta sem repeticao e com mais vogais: ";
+                    table.shorterwithmostvowel();
+                    cout << endl;
+                }
+                else break;
             }
         }
         else cout << "Valor invalido, insira um dentre as opcoes" << endl;
