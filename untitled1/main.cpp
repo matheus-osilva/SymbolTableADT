@@ -411,10 +411,10 @@ public:
 
     void print() {
         for (size_t i = 0; i < size; ++i) {
-            std::cout << "Word: " << entries[i].key << std:: endl <<
+            std::cout << "Word: " << entries[i].key << std:: endl ;/*<<
                       "Number of Occurrences: " << entries[i].value.occurrences << std::endl <<
                       "Number of Letters: " << entries[i].value.letters << std::endl <<
-                      "Number of Vowels: " << entries[i].value.vowels << std::endl;
+                      "Number of Vowels: " << entries[i].value.vowels << std::endl;*/
         }
     }
 
@@ -466,6 +466,73 @@ public:
         for (const auto& entry : maxEntries) {
             // Access the elements of entry
             std::cout << "Palavra: " << entry.key << ", Numero de letras: " << entry.value.letters << std::endl;
+        }
+    }
+    void sr(){
+        if (size == 0) {
+            // Handle the case when the symbol table is empty
+            // Return an empty vector or indicate an error
+            std::cout << "Tabela vazia" << std::endl;
+        }
+
+        std::vector<VOEntry> maxEntries;
+        int longer = entries[0].value.letters;
+
+        for (size_t i = 1; i < size; ++i) {
+            if (entries[i].value.letters > longer && !hasRepeatedLetters(entries[i].key)) {
+                maxEntries.clear();  // Clear the previous entries with the maximum occurrences
+                longer = entries[i].value.letters;
+            }
+            if (entries[i].value.letters == longer && !hasRepeatedLetters(entries[i].key)) {
+                maxEntries.push_back(entries[i]);  // Add the current entry to the vector
+            }
+        }
+
+        for (const auto& entry : maxEntries) {
+            // Access the elements of entry
+            std::cout << "Palavra: " << entry.key << ", Numero de letras: " << entry.value.letters << std::endl;
+        }
+    }
+    void vd(){
+        if (size == 0) {
+            // Handle the case when the symbol table is empty
+            // Return an empty vector or indicate an error
+            std::cout << "Tabela vazia" << std::endl;
+        }
+
+        std::vector<VOEntry> maxVowels;
+        int longer = entries[0].value.vowels;
+
+        for (size_t i = 1; i < size; ++i) {
+            if (entries[i].value.vowels > longer && !hasRepeatedLetters(entries[i].key)) {
+                maxVowels.clear();  // Clear the previous entries with the maximum occurrences
+                longer = entries[i].value.vowels;
+            }
+            if (entries[i].value.vowels == longer) {
+                maxVowels.push_back(entries[i]);  // Add the current entry to the vector
+            }
+        }
+        int lowestLetters = INT_MAX;
+        // Find the lowest value of letters
+        for (const auto& entry : maxVowels) {
+            if (entry.value.letters < lowestLetters) {
+                lowestLetters = entry.value.letters;
+            }
+        }
+        // Erase elements with letters greater than the lowest value
+        auto it = maxVowels.begin();
+        while (it != maxVowels.end()) {
+            if ((*it).value.letters > lowestLetters) {
+                it = maxVowels.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        auto it2 = maxVowels.begin();
+        while (it2 != maxVowels.end()){
+            std::cout << "Palavra: " << it2->key << ", ";
+            std::cout << "Numero de letras: " << it2->value.letters << std::endl;
+            ++it2;
         }
     }
 };
@@ -656,14 +723,16 @@ private:
             root = new Node23();
             root->ch1 = key;
             root->val1 = val;
-            increased = true;
+            increased = false;
             return root;
         }
-        if (key == root->ch1) {
+        else if (key == root->ch1) {
             root->val1.occurrences +=1;
+            /*std::cout << "palavra: " << key << "  ch1: " << root->ch1 << "  cresceu: " << increased << std::endl;
+            print();*/
             return root;
         }
-        else if (key == root->ch2) {
+        else if (!root->is2no && key == root->ch2) {
             root->val2.occurrences +=1;
             return root;
         }
@@ -676,74 +745,67 @@ private:
                         root->val2 = root->val1;
                         root->p3 = root->p2;
                         root->ch1 = p->ch1;
-                        root->p2 = p->p2;
-                        root->p1 = p->p1;
                         root->val1 = p->val1;
+                        root->p1 = p->p1;
+                        root->p2 = p->p2;
                         increased = false;
                         root->is2no = false;
                         delete p;
                         return root;
-                    } else {
+                    }
+                    else {
                         Node23* newNode = new Node23();
                         newNode->ch1 = root->ch2;
                         newNode->val1 = root->val2;
-                        newNode->p2 = root->p3;
                         newNode->p1 = root->p2;
+                        newNode->p2 = root->p3;
                         Node23* nroot = new Node23();
                         nroot->ch1 = root->ch1;
-                        nroot->val2 = root->val1;
+                        nroot->val1 = root->val1;
                         nroot->p2 = newNode;
                         nroot->p1 = root;
                         root->ch1 = p->ch1;
                         root->val1 = p->val1;
                         root->ch2 = "";
-                        root->val2 = val;
+                        root->val2 = Item::None();
                         root->p3 = nullptr;
                         root->p2 = p->p2;
+                        root->p1 = p->p1;
                         newNode->is2no = root->is2no = nroot->is2no = true;
                         increased = true;
                         delete p;
+                        /*if (nroot->ch1 == "Maria"){
+                            using namespace std;
+                            cout << "raiz ch1: " << nroot->ch1 << "  occ:" << nroot->val1.occurrences << "  lett:" << nroot->val1.letters << "  vow:" << nroot->val1.vowels << std::endl;
+                            cout << "p1 ch1: " << nroot->p1->ch1 << "  occ:" << nroot->p1->val1.occurrences << "  lett:" << nroot->p1->val1.letters << "  vow:" << nroot->p1->val1.vowels << std::endl;
+                            cout << "p1 p1 ch1: " << nroot->p1->p1->ch1 << "  occ:" << nroot->p1->p1->val1.occurrences << "  lett:" << nroot->p1->p1->val1.letters << "  vow:" << nroot->p1->p1->val1.vowels << std::endl;
+                            cout << "p1 p2 ch1: " << nroot->p1->p2->ch1 << "  occ:" << nroot->p1->p2->val1.occurrences << "  lett:" << nroot->p1->p1->val1.letters << "  vow:" << nroot->p1->p2->val1.vowels << std::endl;
+                            cout << "p2 ch1: " << nroot->p2->ch1 << "  occ:" << nroot->p2->val1.occurrences << "  lett:" << nroot->p2->val1.letters << "  vow:" << nroot->p2->val1.vowels << std::endl;
+                            cout << "p2 p1 ch1: " << nroot->p2->p1->ch1 << "  occ:" << nroot->p2->p1->val1.occurrences << "  lett:" << nroot->p2->p1->val1.letters << "  vow:" << nroot->p2->p1->val1.vowels << std::endl;
+                            cout << "p2 p2 ch1: " << nroot->p2->p2->ch1 << "  occ:" << nroot->p2->p2->val1.occurrences << "  lett:" << nroot->p2->p2->val1.letters << "  vow:" << nroot->p2->p2->val1.vowels << std::endl;
+                            cout << "p2 p2 ch2: " << nroot->p2->p2->ch2 << "  occ:" << nroot->p2->p2->val2.occurrences << "  lett:" << nroot->p2->p2->val2.letters << "  vow:" << nroot->p2->p2->val2.vowels << std::endl;
+                        }*/
                         return nroot;
                     }
                 }
                 else{
                     root->p1 = p;
-                    /*if (raiz->ch1 == "d" && raiz->p2->is2no == false && raiz->p2->p3->is2no == false){
-                        std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
-                        std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
-                        std::cout << "p2 ch1 e: " << raiz->p2->ch1 << std::endl;
-                        std::cout << "p2 ch2 e: " << raiz->p2->ch2 << std::endl;
-                        std::cout << "p1->p1 ch1 e: " << raiz->p1->p1->ch1 << std::endl;
-                        std::cout << "p1->p1 ch2 e: " << raiz->p1->p1->ch2 << std::endl;
-                        std::cout << "p1->p2 ch1 e: " << raiz->p1->p2->ch1 << std::endl;
-                        std::cout << "p2->p1 ch1 e: " << raiz->p2->p1->ch1 << std::endl;
-                        std::cout << "p2->p2 ch1 e: " << raiz->p2->p2->ch1 << std::endl;
-                        std::cout << "p2->p3 ch1 e: " << raiz->p2->p3->ch1 << std::endl;
-                        std::cout << "p2->p3 ch2 e: " << raiz->p2->p3->ch2 << std::endl;
-                    }*///teste do 11º
-                    /*if (raiz->ch1 == "d" && !raiz->p1->is2no){
-                        std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
-                        std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
-                        std::cout << "p1 ch2 e: " << raiz->p1->ch2 << std::endl;
-                        std::cout << "p2 ch1 e: " << raiz->p2->ch1 << std::endl;
-                        std::cout << "p2 ch2 e: " << raiz->p2->ch2 << std::endl;
-                        std::cout << "p1->p1 ch1 e: " << raiz->p1->p1->ch1 << std::endl;
-                        std::cout << "p1->p2 ch1 e: " << raiz->p1->p2->ch1 << std::endl;
-                        std::cout << "p1->p3 ch1 e: " << raiz->p1->p3->ch1 << std::endl;
-                        std::cout << "p1->p3 ch2 e: " << raiz->p1->p3->ch2 << std::endl;
-                        std::cout << "p2->p1 ch1 e: " << raiz->p2->p1->ch1 << std::endl;
-                        std::cout << "p2->p1 ch2 e: " << raiz->p2->p1->ch2 << std::endl;
-                        std::cout << "p2->p2 ch1 e: " << raiz->p2->p2->ch1 << std::endl;
-                        std::cout << "p2->p3 ch1 e: " << raiz->p2->p3->ch1 << std::endl;
-                        std::cout << "p2->p3 ch2 e: " << raiz->p2->p3->ch2 << std::endl;
-                    }*///teste do 14º
+                    /*if (root->ch1 == "Maria"){
+                        std::cout << "raiz ch1 e: " << root->ch1 << "  occ:" << root->val1.occurrences << "  lett:" << root->val1.letters << "  vow:" << root->val1.vowels << std::endl;
+                        std::cout << "raiz ch2 e: " << root->ch2 << "  occ:" << root->val2.occurrences << "  lett:" << root->val2.letters << "  vow:" << root->val2.vowels << std::endl;
+                        std::cout << "p1 ch1 e: " << root->p1->ch1 << "  occ:" << root->p1->val1.occurrences << "  lett:" << root->p1->val1.letters << "  vow:" << root->p1->val1.vowels << std::endl;
+                        std::cout << "p1 ch2 e: " << root->p1->ch2 << "  occ:" << root->p1->val2.occurrences << "  lett:" << root->p1->val2.letters << "  vow:" << root->p1->val2.vowels << std::endl;
+                        std::cout << "p2 ch1 e: " << root->p2->ch1 << "  occ:" << root->p2->val1.occurrences << "  lett:" << root->p2->val1.letters << "  vow:" << root->p2->val1.vowels << std::endl;
+                        std::cout << "p3 ch1 e: " << root->p3->ch1 << "  occ:" << root->p3->val1.occurrences << "  lett:" << root->p3->val1.letters << "  vow:" << root->p3->val1.vowels << std::endl;
+                        std::cout << "p3 ch2 e: " << root->p3->ch2 << "  occ:" << root->p3->val2.occurrences << "  lett:" << root->p3->val2.letters << "  vow:" << root->p3->val2.vowels << std::endl;
+                    }*/
                     return root;
                 }
             }
             else if (root->is2no || root->ch2 > key) {
                 Node23* p = add23(root->p2, key, val);
                 if (increased) {
-                    if (p->is2no) {
+                    if (root->is2no) {
                         root->ch2 = p->ch1;
                         root->val2 = p->val1;
                         root->p3 = p->p2;
@@ -751,76 +813,50 @@ private:
                         increased = false;
                         delete p;
                         root->is2no = false;
-                        /* std::cout << " ch1 da raiz: " << raiz->ch1 << " ch2 da raiz: " << raiz->ch2 << std::endl;
-                         std::cout << " ch1 p1: " << raiz->p1->ch1 << std::endl;
-                         std::cout << " ch1 p2: " << raiz->p2->ch1 << std::endl;
-                         std::cout << " ch1 p3: " << raiz->p3->ch1 << std::endl;*/
                         return root;
                     }
                     else {
+                        Node23* nroot = new Node23();
+                        nroot->ch1 = p->ch1;
+                        nroot->val1 = p->val1;
                         Node23* newNode = new Node23();
                         newNode->ch1 = root->ch2;
                         newNode->val1 = root->val2;
                         newNode->p2 = root->p3;
-                        newNode->p1 = root->p2;
-                        root->ch2 = p->ch1;
-                        root->val2 = p->val1;
-                        root->p3 = p->p2;
-                        root->p2 = newNode;
+                        newNode->p1 = p->p2;
+                        root->ch2 = "";
+                        root->val2 = Item::None();
+                        root->p3 = nullptr;
+                        root->p2 = p->p1;
+                        nroot->p1 = root;
+                        nroot->p2 = newNode;
                         increased = true;
+                        nroot->is2no = root->is2no = newNode->is2no = true;
                         delete p;
-                        return root;
+                        return nroot;
                     }
                 }
                 else {
                     root->p2 = p;
-                    /*if (raiz->ch1 == "b" && raiz->ch2 == "d"){
-                        std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
-                        std::cout << "raiz ch2 e: " << raiz->ch2 << std::endl;
-                        std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
-                        std::cout << "p2 ch1 e: " << raiz->p2->ch1 << std::endl;
-                        std::cout << "p2 ch2 e: " << raiz->p2->ch2 << std::endl;
-                        std::cout << "p3 ch1 e: " << raiz->p3->ch1 << std::endl;
-                    }//teste do 6º*/
-                    /*if (raiz->ch1 == "d"){
-                        std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
-                        std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
-                        std::cout << "p2 ch1 e: " << raiz->p2->ch1 << std::endl;
-                        std::cout << "p1->p1 ch1 e: " << raiz->p1->p1->ch1 << std::endl;
-                        std::cout << "p1->p2 ch1 e: " << raiz->p1->p2->ch1 << std::endl;
-                        std::cout << "p2->p1 ch1 e: " << raiz->p2->p1->ch1 << std::endl;
-                        std::cout << "p2->p2 ch1 e: " << raiz->p2->p2->ch1 << std::endl;
-                        std::cout << "p2->p2 ch2 e: " << raiz->p2->p2->ch2 << std::endl;
-                    }*///teste do 8º
-                    /*if (raiz->ch1 == "d" && raiz->p2->is2no == false){
-                        std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
-                        std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
-                        std::cout << "p2 ch1 e: " << raiz->p2->ch1 << std::endl;
-                        std::cout << "p2 ch2 e: " << raiz->p2->ch2 << std::endl;
-                        std::cout << "p1->p1 ch1 e: " << raiz->p1->p1->ch1 << std::endl;
-                        std::cout << "p1->p2 ch1 e: " << raiz->p1->p2->ch1 << std::endl;
-                        std::cout << "p2->p1 ch1 e: " << raiz->p2->p1->ch1 << std::endl;
-                        std::cout << "p2->p2 ch1 e: " << raiz->p2->p2->ch1 << std::endl;
-                        std::cout << "p2->p3 ch1 e: " << raiz->p2->p3->ch1 << std::endl;
-                    }*///teste do 9º
-                    /*if (raiz->ch1 == "d" && raiz->p2->is2no == false && raiz->p2->p3->is2no == false){
-                        std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
-                        std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
-                        std::cout << "p2 ch1 e: " << raiz->p2->ch1 << std::endl;
-                        std::cout << "p2 ch2 e: " << raiz->p2->ch2 << std::endl;
-                        std::cout << "p1->p1 ch1 e: " << raiz->p1->p1->ch1 << std::endl;
-                        std::cout << "p1->p2 ch1 e: " << raiz->p1->p2->ch1 << std::endl;
-                        std::cout << "p2->p1 ch1 e: " << raiz->p2->p1->ch1 << std::endl;
-                        std::cout << "p2->p2 ch1 e: " << raiz->p2->p2->ch1 << std::endl;
-                        std::cout << "p2->p3 ch1 e: " << raiz->p2->p3->ch1 << std::endl;
-                        std::cout << "p2->p3 ch2 e: " << raiz->p2->p3->ch2 << std::endl;
-                    }*///teste do 10º
-
+                    /*if (root->ch1 == "Maria" && !root->p2->is2no){
+                        using namespace std;
+                        cout << "raiz ch1: " << root->ch1 << "  occ:" << root->val1.occurrences << "  lett:" << root->val1.letters << "  vow:" << root->val1.vowels << std::endl;
+                        cout << "p1 ch1: " << root->p1->ch1 << "  occ:" << root->p1->val1.occurrences << "  lett:" << root->p1->val1.letters << "  vow:" << root->p1->val1.vowels << std::endl;
+                        cout << "p1 p1 ch1: " << root->p1->p1->ch1 << "  occ:" << root->p1->p1->val1.occurrences << "  lett:" << root->p1->p1->val1.letters << "  vow:" << root->p1->p1->val1.vowels << std::endl;
+                        cout << "p1 p2 ch1: " << root->p1->p2->ch1 << "  occ:" << root->p1->p2->val1.occurrences << "  lett:" << root->p1->p1->val1.letters << "  vow:" << root->p1->p2->val1.vowels << std::endl;
+                        cout << "p2 ch1: " << root->p2->ch1 << "  occ:" << root->p2->val1.occurrences << "  lett:" << root->p2->val1.letters << "  vow:" << root->p2->val1.vowels << std::endl;
+                        cout << "p2 ch2: " << root->p2->ch2 << "  occ:" << root->p2->val2.occurrences << "  lett:" << root->p2->val2.letters << "  vow:" << root->p2->val2.vowels << std::endl;
+                        cout << "p2 p1 ch1: " << root->p2->p1->ch1 << "  occ:" << root->p2->p1->val1.occurrences << "  lett:" << root->p2->p1->val1.letters << "  vow:" << root->p2->p1->val1.vowels << std::endl;
+                        cout << "p2 p2 ch1: " << root->p2->p2->ch1 << "  occ:" << root->p2->p2->val1.occurrences << "  lett:" << root->p2->p2->val1.letters << "  vow:" << root->p2->p2->val1.vowels << std::endl;
+                        cout << "p2 p2 ch2: " << root->p2->p3->ch1 << "  occ:" << root->p2->p3->val1.occurrences << "  lett:" << root->p2->p3->val1.letters << "  vow:" << root->p2->p3->val1.vowels << std::endl;
+                    }*/
+                    /*if (root->ch1 == "Maria" && !root->is2no && !root->p2->is2no && root->p2->p3->ch1 == "foi"){
+                        print();
+                    }*/
                     return root;
                 }
             }
             else {
-                /* std::cout << "insere no p3 a palavra: " << raiz->p3 << std::endl;*/
                 Node23* p = add23(root->p3, key, val);
                 if (increased) {
                     Node23* nroot = new Node23();
@@ -828,6 +864,7 @@ private:
                     nroot->ch1 = root->ch2;
                     nroot->val1 = root->val2;
                     newNode->ch1 = p->ch1;
+                    newNode->val1 = p->val1;
                     newNode->p1 = p->p1;
                     newNode->p2 = p->p2;
                     root->ch2 = "";
@@ -837,28 +874,12 @@ private:
                     nroot->p2 = newNode;
                     delete(p);
                     increased = true;
-                    nroot->is2no = root->is2no = newNode->is2no;
-                    /*if(nroot->ch1 == "d"){
-                        std::cout << "raiz ch1 e: " << nroot->ch1 << std::endl;
-                        std::cout << "p1 ch1 e: " << nroot->p1->ch1 << std::endl;
-                        std::cout << "p2 ch1 e: " << nroot->p2->ch1 << std::endl;
-                        std::cout << "p1->p1 ch1 e: " << nroot->p1->p1->ch1 << std::endl;
-                        std::cout << "p1->p2 ch1 e: " << nroot->p1->p2->ch1 << std::endl;
-                        std::cout << "p2->p1 ch1 e: " << nroot->p2->p1->ch1 << std::endl;
-                        std::cout << "p2->p2 ch1 e: " << nroot->p2->p2->ch1 << std::endl;
-                    }*/
+                    nroot->is2no = root->is2no = newNode->is2no = true;
                     return nroot;
                 }
                 else {
                     root->p3 = p;
-                    /*std::cout << "raiz ch1 e: " << raiz->ch1 << std::endl;
-                    std::cout << "raiz ch2 e: " << raiz->ch2 << std::endl;
-                    std::cout << "p1 ch1 e: " << raiz->p1->ch1 << std::endl;
-                    std::cout << "p2 ch1 e: " << raiz->p2->ch1 << std::endl;
-                    std::cout << "p3 ch1 e: " << raiz->p3->ch1 << std::endl;
-                    std::cout << "p3 ch2 e: " << raiz->p3->ch2 << std::endl;*///teste do 6º
                     return root;
-
                 }
             }
         }
@@ -871,7 +892,6 @@ private:
                     root->val1 = val;
                     root->is2no = false;
                     increased = false;
-                    /*std::cout << raiz->ch1 << "--e--" << raiz->ch2 << std::endl;*///teste 2º
                     return root;
                 }
                 else {
@@ -879,8 +899,6 @@ private:
                     root->val2 = val;
                     root->is2no = false;
                     increased = false;
-                    /*std::cout << "ch1: " << raiz->ch1 << std::endl;
-                    std::cout << "ch2: " << raiz->ch2 << std::endl;*/
                     return root;
                 }
             }
@@ -890,13 +908,12 @@ private:
                     Node23* nroot = new Node23();
                     newNode->ch1 = root->ch2;
                     newNode->val1 = root->val2;
-                    newNode->p2 = root->p3;
                     nroot->ch1 = root->ch1;
                     nroot->val1 = root->val1;
                     root->ch1 = key;
                     root->val1 = val;
                     root->ch2 = "";
-                    root->val2 = val;
+                    root->val2 = Item::None();
                     nroot->p1 = root;
                     nroot->p2 = newNode;
                     increased = true;
@@ -911,15 +928,11 @@ private:
                     nroot->ch1 = key;
                     nroot->val1 = val;
                     root->ch2 = "";
-                    root->val2 = val.None();
+                    root->val2 = Item::None();
                     nroot->p1 = root;
                     nroot->p2 = newNode;
-                    nroot->p3 = nullptr;
                     increased = true;
                     root->is2no = nroot->is2no = newNode->is2no = true;
-                    /* std::cout << nroot->ch1 << " essa e a raiz" << std::endl;
-                     std::cout << nroot->p1->ch1 << " essa e o ch1 do p1" << std::endl;
-                     std::cout << nroot->p2->ch1 << " essa e o ch1 do p2" << std::endl;*/ //teste do 3º
                     return nroot;
                 }
                 else {
@@ -930,7 +943,7 @@ private:
                     nroot->ch1 = root->ch2;
                     nroot->val1 = root->val2;
                     root->ch2 = "";
-                    root->val2 = val;
+                    root->val2 = Item::None();
                     nroot->p1 = root;
                     nroot->p2 = newNode;
                     increased = true;
@@ -948,9 +961,9 @@ private:
         while (!stack.empty()) {
             Node23* current = stack.top();
             stack.pop();
-
             if (current != nullptr) {
                 if (current->ch1 == key) {
+                    std::cout << current->val1.occurrences << std::endl;
                     return current->val1;
                 }
 
@@ -970,45 +983,218 @@ private:
     void inorder(Node23* root) {
         if (root != nullptr) {
             if (root->p1 == nullptr) { // Node is a leaf
-                std::cout << "key: " << root->ch1 << std::endl;
+                std::cout << "key folha:" << root->ch1 << "  occ:" << root->val1.occurrences << "  lett:" << root->val1.letters << "  vow:" << root->val1.vowels << std::endl;
                 if (!root->is2no) {
-                    std::cout << "key: " << root->ch2 << std::endl;
+                    std::cout << "key2 folha:" << root->ch2 << "  occ:" << root->val2.occurrences << "  lett:" << root->val2.letters << "  vow:" << root->val2.vowels << std::endl;
                 }
             } else { // Node is not a leaf
                 inorder(root->p1);
-                std::cout << "key: " << root->ch1 << std::endl;
+                std::cout << "key:" << root->ch1 << "  occ:" << root->val1.occurrences << "  lett:" << root->val1.letters << "  vow:" << root->val1.vowels << std::endl;
                 inorder(root->p2);
                 if (!root->is2no) {
-                    std::cout << "key: " << root->ch2 << std::endl;
+                    std::cout << "key2:" << root->ch2 << "  occ:" << root->val2.occurrences << "  lett:" << root->val2.letters << "  vow:" << root->val2.vowels << std::endl;
                     inorder(root->p3);
                 }
             }
         }
     }
-
+    Node23* twothreetotwonode(Node23* node){
+        Node23* novo = new Node23();
+        novo->ch1 = node->ch2;
+        novo->val1 = node->val2;
+        novo->p1 = node->p2;
+        novo->p2 = node->p3;
+        return novo;
+    }
     void greatOccurrences23(Node23* root, std::vector<Node23*>& maxNodes, int& maxOccurrences) {
         if (root != nullptr) {
-            greatOccurrences23(root->p1, maxNodes, maxOccurrences);
-
-            // Check if the current node has more occurrences
-            if (root->val1.occurrences > maxOccurrences) {
-                maxOccurrences = root->val1.occurrences;
-                maxNodes.clear(); // Clear previous max nodes
-                maxNodes.push_back(root);
-            } else if (root->val1.occurrences == maxOccurrences) {
-                maxNodes.push_back(root);
-            }
-            if (!root->is2no) {
-                if (root->val2.occurrences > maxOccurrences) {
-                    maxOccurrences = root->val2.occurrences;
-                    maxNodes.clear(); // Clear previous max nodes
-                    maxNodes.push_back(root);
-                } else if (root->val2.occurrences == maxOccurrences) {
-                    maxNodes.push_back(root);
+            if (root != nullptr) {
+                if (root->p1 == nullptr) {
+                    if (root->val1.occurrences > maxOccurrences) {
+                        maxOccurrences = root->val1.occurrences;
+                        maxNodes.clear(); // Clear previous max nodes
+                        maxNodes.push_back(root);
+                    } else if (root->val1.occurrences == maxOccurrences) {
+                        maxNodes.push_back(root);
+                    }
+                    if (!root->is2no) {
+                        if (root->val2.occurrences > maxOccurrences) {
+                            maxOccurrences = root->val2.occurrences;
+                            maxNodes.clear(); // Clear previous max nodes
+                            maxNodes.push_back(twothreetotwonode(root));
+                        } else if (root->val2.occurrences == maxOccurrences) {
+                            maxNodes.push_back(twothreetotwonode(root));
+                        }
+                    }
+                } else {
+                    greatOccurrences23(root->p1, maxNodes, maxOccurrences);
+                    if (root->val1.occurrences > maxOccurrences) {
+                        maxOccurrences = root->val1.occurrences;
+                        maxNodes.clear(); // Clear previous max nodes
+                        maxNodes.push_back(root);
+                    } else if (root->val1.occurrences == maxOccurrences) {
+                        maxNodes.push_back(root);
+                    }
+                    greatOccurrences23(root->p2, maxNodes, maxOccurrences);
+                    if (!root->is2no) {
+                        if (root->val2.occurrences > maxOccurrences) {
+                            maxOccurrences = root->val2.occurrences;
+                            maxNodes.clear(); // Clear previous max nodes
+                            maxNodes.push_back(twothreetotwonode(root));
+                        } else if (root->val2.occurrences == maxOccurrences) {
+                            maxNodes.push_back(twothreetotwonode(root));
+                        }
+                        greatOccurrences23(root->p3, maxNodes, maxOccurrences);
+                    }
                 }
             }
-            greatOccurrences23(root->p2, maxNodes, maxOccurrences);
-            if (!root->is2no) greatOccurrences23(root->p3, maxNodes, maxOccurrences);
+        }
+    }
+    void greatLetters23(Node23 *root, std::vector<Node23 *> &maxNodes, int &maxLetters) {
+        if (root != nullptr) {
+            if (root->p1 == nullptr) {
+                if (root->val1.letters > maxLetters) {
+                    maxLetters = root->val1.letters;
+                    maxNodes.clear(); // Clear previous max nodes
+                    maxNodes.push_back(root);
+                } else if (root->val1.letters == maxLetters) {
+                    maxNodes.push_back(root);
+                }
+                if (!root->is2no) {
+                    if (root->val2.letters > maxLetters) {
+                        maxLetters = root->val2.letters;
+                        maxNodes.clear(); // Clear previous max nodes
+                        maxNodes.push_back(twothreetotwonode(root));
+                    } else if (root->val2.letters == maxLetters) {
+                        maxNodes.push_back(twothreetotwonode(root));
+                    }
+                }
+            }
+            else {
+                greatLetters23(root->p1, maxNodes, maxLetters);
+                if (root->val1.letters > maxLetters) {
+                    maxLetters = root->val1.letters;
+                    maxNodes.clear(); // Clear previous max nodes
+                    maxNodes.push_back(root);
+                } else if (root->val1.letters == maxLetters) {
+                    maxNodes.push_back(root);
+                }
+                greatLetters23(root->p2, maxNodes, maxLetters);
+                if (!root->is2no) {
+                    if (root->val2.letters > maxLetters) {
+                        maxLetters = root->val2.letters;
+                        maxNodes.clear(); // Clear previous max nodes
+                        maxNodes.push_back(twothreetotwonode(root));
+                    } else if (root->val2.letters == maxLetters) {
+                        maxNodes.push_back(twothreetotwonode(root));
+                    }
+                    greatLetters23(root->p3, maxNodes, maxLetters);
+                }
+            }
+        }
+    }
+    void sr23(Node23 *root, std::vector<Node23 *> &maxNodes, int &maxLetters) {
+        if (root != nullptr) {
+            if (root->p1 == nullptr) {
+                if (root->val1.letters > maxLetters && !hasRepeatedLetters(root->ch1)) {
+                    maxLetters = root->val1.letters;
+                    maxNodes.clear(); // Clear previous max nodes
+                    maxNodes.push_back(root);
+                } else if (root->val1.letters == maxLetters && !hasRepeatedLetters(root->ch1)) {
+                    maxNodes.push_back(root);
+                }
+                if (!root->is2no) {
+                    if (root->val2.letters > maxLetters && !hasRepeatedLetters(root->ch1)) {
+                        maxLetters = root->val2.letters;
+                        maxNodes.clear(); // Clear previous max nodes
+                        maxNodes.push_back(twothreetotwonode(root));
+                    } else if (root->val2.letters == maxLetters && !hasRepeatedLetters(root->ch1)) {
+                        maxNodes.push_back(twothreetotwonode(root));
+                    }
+                }
+            }
+            else {
+                sr23(root->p1, maxNodes, maxLetters);
+                if (root->val1.letters > maxLetters && !hasRepeatedLetters(root->ch1)) {
+                    maxLetters = root->val1.letters;
+                    maxNodes.clear(); // Clear previous max nodes
+                    maxNodes.push_back(root);
+                } else if (root->val1.letters == maxLetters && !hasRepeatedLetters(root->ch1)) {
+                    maxNodes.push_back(root);
+                }
+                sr23(root->p2, maxNodes, maxLetters);
+                if (!root->is2no) {
+                    if (root->val2.letters > maxLetters && !hasRepeatedLetters(root->ch1)) {
+                        maxLetters = root->val2.letters;
+                        maxNodes.clear(); // Clear previous max nodes
+                        maxNodes.push_back(twothreetotwonode(root));
+                    } else if (root->val2.letters == maxLetters && !hasRepeatedLetters(root->ch1)) {
+                        maxNodes.push_back(twothreetotwonode(root));
+                    }
+                    sr23(root->p3, maxNodes, maxLetters);
+                }
+            }
+        }
+    }
+    void mostVowels23(Node23 *root, std::vector<Node23 *> &maxNodes, int &maxVowels) {
+        if (root != nullptr) {
+            if (root->p1 == nullptr) {
+                if (root->val1.vowels > maxVowels && !hasRepeatedLetters(root->ch1)) {
+                    maxVowels = root->val1.vowels;
+                    maxNodes.clear(); // Clear previous max nodes
+                    maxNodes.push_back(root);
+                } else if (root->val1.vowels == maxVowels && !hasRepeatedLetters(root->ch1)) {
+                    maxNodes.push_back(root);
+                }
+                if (!root->is2no) {
+                    if (root->val2.vowels > maxVowels && !hasRepeatedLetters(root->ch1)) {
+                        maxVowels = root->val2.vowels;
+                        maxNodes.clear(); // Clear previous max nodes
+                        maxNodes.push_back(twothreetotwonode(root));
+                    } else if (root->val2.vowels == maxVowels && !hasRepeatedLetters(root->ch1)) {
+                        maxNodes.push_back(twothreetotwonode(root));
+                    }
+                }
+            }
+            else {
+                mostVowels23(root->p1, maxNodes, maxVowels);
+                if (root->val1.vowels > maxVowels && !hasRepeatedLetters(root->ch1)) {
+                    maxVowels = root->val1.vowels;
+                    maxNodes.clear(); // Clear previous max nodes
+                    maxNodes.push_back(root);
+                } else if (root->val1.vowels == maxVowels && !hasRepeatedLetters(root->ch1)) {
+                    maxNodes.push_back(root);
+                }
+                mostVowels23(root->p2, maxNodes, maxVowels);
+                if (!root->is2no) {
+                    if (root->val2.vowels > maxVowels && !hasRepeatedLetters(root->ch1)) {
+                        maxVowels = root->val2.vowels;
+                        maxNodes.clear(); // Clear previous max nodes
+                        maxNodes.push_back(twothreetotwonode(root));
+                    } else if (root->val2.vowels == maxVowels && !hasRepeatedLetters(root->ch1)) {
+                        maxNodes.push_back(twothreetotwonode(root));
+                    }
+                    mostVowels23(root->p3, maxNodes, maxVowels);
+                }
+            }
+        }
+    }
+    void vd23(std::vector<Node23*>& minNodes) {
+        int lowestLetters = INT_MAX;
+        // Find the lowest value of letters
+        for (const auto& node : minNodes) {
+            if (node->val1.letters < lowestLetters) {
+                lowestLetters = node->val1.letters;
+            }
+        }
+        // Erase elements with letters greater than the lowest value
+        auto it = minNodes.begin();
+        while (it != minNodes.end()) {
+            if ((*it)->val1.letters > lowestLetters) {
+                it = minNodes.erase(it);
+            } else {
+                ++it;
+            }
         }
     }
 
@@ -1016,6 +1202,7 @@ public:
     SymbolTable23() : root(nullptr) {}
     void put(std::string key) {
         Item value = findValue(key);
+        increased = false;
         root = add23(root, key, value);
     }
     void print() {
@@ -1024,7 +1211,7 @@ public:
     Item find(std::string& key){
         return get(root, key);
     }
-    /*void mostOccurred() {
+    void mostOccurred() {
         std::vector<Node23*> maxNodes;
         int maxOccurrences = 0;
         greatOccurrences23(root, maxNodes, maxOccurrences);
@@ -1032,14 +1219,55 @@ public:
             std::cout << "A arvore esta vazia" << std::endl;
         } else {
             for (const auto& node : maxNodes) {
-                std::cout << "Palavra: " << node. << ", ";
-                std::cout << "Numero de ocorrencias: " << node->value.occurrences << std::endl;
+                std::cout << "Palavra: " << node->ch1 << ", ";
+                std::cout << "Numero de ocorrencias: " << node->val1.occurrences << std::endl;
             }
         }
-    }*/
+    }
+    void longer() {
+        std::vector<Node23*> maxNodes;
+        int maxLetters = 0;
+        greatLetters23(root, maxNodes, maxLetters);
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->ch1 << ", ";
+                std::cout << "Numero de letras: " << node->val1.letters << std::endl;
+            }
+        }
+    }
 
+    void longerwithnorepeatedletters() {
+        std::vector<Node23*> maxNodes;
+        int maxLetters = 0;
 
+        sr23(root, maxNodes, maxLetters);
 
+        if (maxNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : maxNodes) {
+                std::cout << "Palavra: " << node->ch1 << ", ";
+                std::cout << "Numero de letras: " << node->val1.letters << std::endl;
+            }
+        }
+    }
+
+    void shorterwithmostvowel() {
+        std::vector<Node23*> minNodes;
+        int lowVowels = root->val1.vowels;
+        mostVowels23(root, minNodes, lowVowels);
+        vd23(minNodes);
+        if (minNodes.empty()) {
+            std::cout << "A arvore esta vazia" << std::endl;
+        } else {
+            for (const auto& node : minNodes) {
+                std::cout << "Palavra: " << node->ch1 << ", ";
+                std::cout << "Numero de letras: " << node->val1.letters << std::endl;
+            }
+        }
+    }
 };
 
 const bool RED = true;
@@ -1314,6 +1542,7 @@ int main() {
                     table.put(word);
                 }
             }
+            table.print();
             for (string consult : consultas) {
                 const char o = 'O';
                 // Acha as palavras com maiores ocorrências no texto
@@ -1344,8 +1573,18 @@ int main() {
                     cout << endl;
                 }
                 else if (consult == "SR") {
-
+                    cout << endl;
+                    cout << "Palavra mais longa sem repeticoes: ";
+                    table.sr();
+                    cout << endl;
                 }
+                else if (consult == "VD") {
+                    cout << endl;
+                    cout << "Palavra mais longa sem letras repetidas: ";
+                    table.vd();
+                    cout << endl;
+                }
+
             }
         }
         else if (choice == "abb") {
@@ -1407,7 +1646,7 @@ int main() {
                 if (consult == "F"){
                     cout << endl;
                     cout << "Maior(es) ocorrencia(s) no texto: " << endl;
-                    //table.mostOccurred();
+                    table.mostOccurred();
                     cout << endl;
                 }
                     // Verifica quantas vezes a palavra dada está no texto
@@ -1427,11 +1666,20 @@ int main() {
                 else if (consult == "L") {
                     cout << endl;
                     cout << "Palavra mais longa: ";
-                    //table.longer();
+                    table.longer();
                     cout << endl;
                 }
                 else if (consult == "SR") {
-
+                    cout << endl;
+                    cout << "Palavra mais longa sem letras repetidas: ";
+                    table.longerwithnorepeatedletters();
+                    cout << endl;
+                }
+                else if (consult == "VD") {
+                    cout << endl;
+                    cout << "Palavra mais curta sem repeticao e com mais vogais: ";
+                    table.shorterwithmostvowel();
+                    cout << endl;
                 }
             }
         }
@@ -1496,11 +1744,8 @@ int main() {
             }
         }
         else cout << "Valor invalido, insira um dentre as opcoes" << endl;
-
         cout << "Fim do teste" << endl;
         cout << endl;
     }
-
-
     return 0;
 }
