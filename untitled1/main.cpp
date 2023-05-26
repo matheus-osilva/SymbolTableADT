@@ -21,6 +21,14 @@ struct Item {
     }
 };
 
+std::string removeTrailingPunctuation(const std::string& word) {
+    std::string cleanedWord = word;
+    while (!cleanedWord.empty() && ispunct(cleanedWord.back())) {
+        cleanedWord.pop_back();
+    }
+    return cleanedWord;
+}
+
 bool hasRepeatedLetters(const std::string& str) {
     std::unordered_set<char> uniqueLetters;
     for (char c : str) {
@@ -91,17 +99,14 @@ void sr(NodeType *root, std::vector<NodeType *> &maxNodes, int &maxLetters) {
         sr(root->left, maxNodes, maxLetters);
 
         // Check if the current node has more occurrences
-        if (root->value.letters > maxLetters) {
-            if(!hasRepeatedLetters(root->key)){
-                maxLetters = root->value.letters;
-                maxNodes.clear(); // Clear previous max nodes
-                maxNodes.push_back(root);
-            }
-
-        } else if (root->value.letters == maxLetters) {
+        if (root->value.letters > maxLetters && !hasRepeatedLetters(root->key)) {
+            maxLetters = root->value.letters;
+            maxNodes.clear(); // Clear previous max nodes
             maxNodes.push_back(root);
         }
-
+        else if (root->value.letters == maxLetters && !hasRepeatedLetters(root->key)) {
+            maxNodes.push_back(root);
+        }
         sr(root->right, maxNodes, maxLetters);
     }
 }
@@ -411,10 +416,10 @@ public:
 
     void print() {
         for (size_t i = 0; i < size; ++i) {
-            std::cout << "Word: " << entries[i].key << std:: endl ;/*<<
+            std::cout << "Word: " << entries[i].key << std:: endl <<
                       "Number of Occurrences: " << entries[i].value.occurrences << std::endl <<
                       "Number of Letters: " << entries[i].value.letters << std::endl <<
-                      "Number of Vowels: " << entries[i].value.vowels << std::endl;*/
+                      "Number of Vowels: " << entries[i].value.vowels << std::endl;
         }
     }
 
@@ -728,15 +733,13 @@ private:
         }
         else if (key == root->ch1) {
             root->val1.occurrences +=1;
-            /*std::cout << "palavra: " << key << "  ch1: " << root->ch1 << "  cresceu: " << increased << std::endl;
-            print();*/
             return root;
         }
         else if (!root->is2no && key == root->ch2) {
             root->val2.occurrences +=1;
             return root;
         }
-        if (root->p1 != nullptr) { // raiz is not a leaf
+        if (root->p1 != nullptr) { // root is not a leaf
             if (root->ch1 > key) {
                 Node23* p = add23(root->p1, key, val);
                 if (increased) {
@@ -774,31 +777,11 @@ private:
                         newNode->is2no = root->is2no = nroot->is2no = true;
                         increased = true;
                         delete p;
-                        /*if (nroot->ch1 == "Maria"){
-                            using namespace std;
-                            cout << "raiz ch1: " << nroot->ch1 << "  occ:" << nroot->val1.occurrences << "  lett:" << nroot->val1.letters << "  vow:" << nroot->val1.vowels << std::endl;
-                            cout << "p1 ch1: " << nroot->p1->ch1 << "  occ:" << nroot->p1->val1.occurrences << "  lett:" << nroot->p1->val1.letters << "  vow:" << nroot->p1->val1.vowels << std::endl;
-                            cout << "p1 p1 ch1: " << nroot->p1->p1->ch1 << "  occ:" << nroot->p1->p1->val1.occurrences << "  lett:" << nroot->p1->p1->val1.letters << "  vow:" << nroot->p1->p1->val1.vowels << std::endl;
-                            cout << "p1 p2 ch1: " << nroot->p1->p2->ch1 << "  occ:" << nroot->p1->p2->val1.occurrences << "  lett:" << nroot->p1->p1->val1.letters << "  vow:" << nroot->p1->p2->val1.vowels << std::endl;
-                            cout << "p2 ch1: " << nroot->p2->ch1 << "  occ:" << nroot->p2->val1.occurrences << "  lett:" << nroot->p2->val1.letters << "  vow:" << nroot->p2->val1.vowels << std::endl;
-                            cout << "p2 p1 ch1: " << nroot->p2->p1->ch1 << "  occ:" << nroot->p2->p1->val1.occurrences << "  lett:" << nroot->p2->p1->val1.letters << "  vow:" << nroot->p2->p1->val1.vowels << std::endl;
-                            cout << "p2 p2 ch1: " << nroot->p2->p2->ch1 << "  occ:" << nroot->p2->p2->val1.occurrences << "  lett:" << nroot->p2->p2->val1.letters << "  vow:" << nroot->p2->p2->val1.vowels << std::endl;
-                            cout << "p2 p2 ch2: " << nroot->p2->p2->ch2 << "  occ:" << nroot->p2->p2->val2.occurrences << "  lett:" << nroot->p2->p2->val2.letters << "  vow:" << nroot->p2->p2->val2.vowels << std::endl;
-                        }*/
                         return nroot;
                     }
                 }
                 else{
                     root->p1 = p;
-                    /*if (root->ch1 == "Maria"){
-                        std::cout << "raiz ch1 e: " << root->ch1 << "  occ:" << root->val1.occurrences << "  lett:" << root->val1.letters << "  vow:" << root->val1.vowels << std::endl;
-                        std::cout << "raiz ch2 e: " << root->ch2 << "  occ:" << root->val2.occurrences << "  lett:" << root->val2.letters << "  vow:" << root->val2.vowels << std::endl;
-                        std::cout << "p1 ch1 e: " << root->p1->ch1 << "  occ:" << root->p1->val1.occurrences << "  lett:" << root->p1->val1.letters << "  vow:" << root->p1->val1.vowels << std::endl;
-                        std::cout << "p1 ch2 e: " << root->p1->ch2 << "  occ:" << root->p1->val2.occurrences << "  lett:" << root->p1->val2.letters << "  vow:" << root->p1->val2.vowels << std::endl;
-                        std::cout << "p2 ch1 e: " << root->p2->ch1 << "  occ:" << root->p2->val1.occurrences << "  lett:" << root->p2->val1.letters << "  vow:" << root->p2->val1.vowels << std::endl;
-                        std::cout << "p3 ch1 e: " << root->p3->ch1 << "  occ:" << root->p3->val1.occurrences << "  lett:" << root->p3->val1.letters << "  vow:" << root->p3->val1.vowels << std::endl;
-                        std::cout << "p3 ch2 e: " << root->p3->ch2 << "  occ:" << root->p3->val2.occurrences << "  lett:" << root->p3->val2.letters << "  vow:" << root->p3->val2.vowels << std::endl;
-                    }*/
                     return root;
                 }
             }
@@ -838,21 +821,6 @@ private:
                 }
                 else {
                     root->p2 = p;
-                    /*if (root->ch1 == "Maria" && !root->p2->is2no){
-                        using namespace std;
-                        cout << "raiz ch1: " << root->ch1 << "  occ:" << root->val1.occurrences << "  lett:" << root->val1.letters << "  vow:" << root->val1.vowels << std::endl;
-                        cout << "p1 ch1: " << root->p1->ch1 << "  occ:" << root->p1->val1.occurrences << "  lett:" << root->p1->val1.letters << "  vow:" << root->p1->val1.vowels << std::endl;
-                        cout << "p1 p1 ch1: " << root->p1->p1->ch1 << "  occ:" << root->p1->p1->val1.occurrences << "  lett:" << root->p1->p1->val1.letters << "  vow:" << root->p1->p1->val1.vowels << std::endl;
-                        cout << "p1 p2 ch1: " << root->p1->p2->ch1 << "  occ:" << root->p1->p2->val1.occurrences << "  lett:" << root->p1->p1->val1.letters << "  vow:" << root->p1->p2->val1.vowels << std::endl;
-                        cout << "p2 ch1: " << root->p2->ch1 << "  occ:" << root->p2->val1.occurrences << "  lett:" << root->p2->val1.letters << "  vow:" << root->p2->val1.vowels << std::endl;
-                        cout << "p2 ch2: " << root->p2->ch2 << "  occ:" << root->p2->val2.occurrences << "  lett:" << root->p2->val2.letters << "  vow:" << root->p2->val2.vowels << std::endl;
-                        cout << "p2 p1 ch1: " << root->p2->p1->ch1 << "  occ:" << root->p2->p1->val1.occurrences << "  lett:" << root->p2->p1->val1.letters << "  vow:" << root->p2->p1->val1.vowels << std::endl;
-                        cout << "p2 p2 ch1: " << root->p2->p2->ch1 << "  occ:" << root->p2->p2->val1.occurrences << "  lett:" << root->p2->p2->val1.letters << "  vow:" << root->p2->p2->val1.vowels << std::endl;
-                        cout << "p2 p2 ch2: " << root->p2->p3->ch1 << "  occ:" << root->p2->p3->val1.occurrences << "  lett:" << root->p2->p3->val1.letters << "  vow:" << root->p2->p3->val1.vowels << std::endl;
-                    }*/
-                    /*if (root->ch1 == "Maria" && !root->is2no && !root->p2->is2no && root->p2->p3->ch1 == "foi"){
-                        print();
-                    }*/
                     return root;
                 }
             }
@@ -883,7 +851,7 @@ private:
                 }
             }
         }
-        else { // raiz is a leaf
+        else { // root is a leaf
             if (root->is2no) {
                 if (root->ch1 > key) {
                     root->ch2 = root->ch1;
@@ -902,7 +870,7 @@ private:
                     return root;
                 }
             }
-            else { // raiz is a 3 node
+            else { // root is a 3 node
                 if (key < root->ch1) {
                     Node23* newNode = new Node23();
                     Node23* nroot = new Node23();
@@ -963,7 +931,6 @@ private:
             stack.pop();
             if (current != nullptr) {
                 if (current->ch1 == key) {
-                    std::cout << current->val1.occurrences << std::endl;
                     return current->val1;
                 }
 
@@ -1539,7 +1506,8 @@ int main() {
                 std::stringstream ss(line);
                 std::string word;
                 while (ss >> word) {
-                    table.put(word);
+                    std::string cleanedWord = removeTrailingPunctuation(word);
+                    table.put(cleanedWord);
                 }
             }
             table.print();
@@ -1600,7 +1568,8 @@ int main() {
                 std::stringstream ss(line);
                 std::string word;
                 while (ss >> word) {
-                    table.put(word);
+                    std::string cleanedWord = removeTrailingPunctuation(word);
+                    table.put(cleanedWord);
                 }
             }
             consultas_gerais(consultas, table);
@@ -1618,7 +1587,8 @@ int main() {
                 std::stringstream ss(line);
                 std::string word;
                 while (ss >> word) {
-                    table.put(word);
+                    std::string cleanedWord = removeTrailingPunctuation(word);
+                    table.put(cleanedWord);
                 }
             }
             consultas_gerais(consultas, table);
@@ -1636,7 +1606,8 @@ int main() {
                 std::stringstream ss(line);
                 std::string word;
                 while (ss >> word) {
-                    table.put(word);
+                    std::string cleanedWord = removeTrailingPunctuation(word);
+                    table.put(cleanedWord);
                 }
             }
             table.print();
@@ -1697,7 +1668,8 @@ int main() {
                 std::stringstream ss(line);
                 std::string word;
                 while (ss >> word) {
-                    table.put(word);
+                    std::string cleanedWord = removeTrailingPunctuation(word);
+                    table.put(cleanedWord);
                 }
             }
             for (string consult : consultas) {
