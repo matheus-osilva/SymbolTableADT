@@ -155,7 +155,7 @@ void consultas_gerais(std::vector<std::string> consultas, TableType& table){
     using namespace std;
     for (string consult : consultas) {
         const char o = 'O';
-        // Acha as palavras com maiores ocorrências no texto
+        
         if (consult == "F") {
             cout << endl;
             cout << "Maior(es) ocorrencia(s) no texto: " << endl;
@@ -1467,257 +1467,400 @@ public:
 
 int main() {
     using namespace std;
+    string mode;
     string choice;
+    std::string filePath = R"(C:\Users\Matheus\CLionProjects\untitled1\m.txt)";
     cout << "Bem vindo ao segundo exercicio programa de MAC0323" << endl;
-    cout << "Escolha sua estrutura de dados dentre as seguintes opcoes: " << endl;
-    while (true){
-        int numconsultas;
-        cout << "Digite 'VO' para um vetor ordenado" << endl;
-        cout << "Digite 'ABB' para uma arvore de busca binaria" << endl;
-        cout << "Digite 'TR' para uma Treap" << endl;
-        cout << "Digite 'A23' para uma arvore balanceada 2-3" << endl;
-        cout << "Digite 'ARN' para uma arvore balanceada rubro-negro" << endl;
-        cout << "Digite 'sair' para finalizar o programa" << endl;
-        cout << "Nao diferenciamos maiusculas e minusculas" << endl;
-        cin >> choice;
-        for (char& c : choice) {
-            c = tolower(c);
-        }
-        if (choice == "sair") break;
-        cout << "Digite a quantidade de consultas a serem feitas (1-5)" << endl;
-        cin >> numconsultas;
-        cin.ignore();
-        vector<string> consultas(5);
-        for (int i = 0; i < numconsultas; ++i) {
-            cout << "Consulta [" << i + 1 << "]: ";
-            getline(cin, consultas[i]);
+    cout << "Escolha o modo de execucao do programa (consulta ou teste): " << endl;
+    cin >> mode;
+    if (mode == "consulta") {
+        while (true){
+            int numconsultas;
+            cout << "Escolha sua estrutura de dados dentre as seguintes opcoes: " << endl;
+            cout << "Digite 'VO' para um vetor ordenado" << endl;
+            cout << "Digite 'ABB' para uma arvore de busca binaria" << endl;
+            cout << "Digite 'TR' para uma Treap" << endl;
+            cout << "Digite 'A23' para uma arvore balanceada 2-3" << endl;
+            cout << "Digite 'ARN' para uma arvore balanceada rubro-negro" << endl;
+            cout << "Digite 'sair' para finalizar o programa" << endl;
+            cin >> choice;
+            for (char& c : choice) {
+                c = tolower(c);
+            }
+            if (choice == "sair") break;
+            cout << "Digite a quantidade de consultas a serem feitas (1-5)" << endl;
+            cin >> numconsultas;
+            cin.ignore();
+            vector<string> consultas(5);
+            if (!(numconsultas <= 5 && numconsultas >= 1)) break;
+            for (int i = 0; i < numconsultas; ++i) {
+                cout << "Consulta [" << i + 1 << "]: ";
+                getline(cin, consultas[i]);
+                cout << endl;
+            }
+            if (choice == "vo"){
+                std::ifstream inputFile(filePath);
+                if (!inputFile.is_open()) {
+                    std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                    return 1;
+                }
+                SymbolTableOV table;
+                std::string line;
+                while (std::getline(inputFile, line)) {
+                    std::stringstream ss(line);
+                    std::string word;
+                    while (ss >> word) {
+                        std::string cleanedWord = removeTrailingPunctuation(word);
+                        table.put(cleanedWord);
+                    }
+                }
+                for (string consult : consultas) {
+                    const char o = 'O';
+                    // Acha as palavras com maiores ocorrências no texto
+                    if (consult == "F"){
+                        cout << endl;
+                        cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+                        table.mostOccurred();
+                        cout << endl;
+                    }
+                        // Verifica quantas vezes a palavra dada está no texto
+                    else if (consult[0] == o) {
+                        cout << endl;
+                        string key;
+                        size_t spacePos = consult.find(' ');
+                        if (spacePos != std::string::npos) {
+                            // Extract the substring starting from the character after the space
+                            key = consult.substr(spacePos + 1);
+                        }
+                        Item value;
+                        value = table.get(key);
+                        if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                        else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
+                    }
+                    else if (consult == "L") {
+                        cout << endl;
+                        cout << "Palavra mais longa: ";
+                        table.longer();
+                        cout << endl;
+                    }
+                    else if (consult == "SR") {
+                        cout << endl;
+                        cout << "Palavra mais longa sem repeticoes: ";
+                        table.sr();
+                        cout << endl;
+                    }
+                    else if (consult == "VD") {
+                        cout << endl;
+                        cout << "Palavra mais longa sem letras repetidas: ";
+                        table.vd();
+                        cout << endl;
+                    }
+                }
+            }
+            else if (choice == "abb") {
+                std::ifstream inputFile(filePath);
+                if (!inputFile.is_open()) {
+                    std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                    return 1;
+                }
+                SymbolTableBST table;
+                std::string line;
+                while (std::getline(inputFile, line)) {
+                    std::stringstream ss(line);
+                    std::string word;
+                    while (ss >> word) {
+                        std::string cleanedWord = removeTrailingPunctuation(word);
+                        table.put(cleanedWord);
+                    }
+                }
+                consultas_gerais(consultas, table);
+            }
+            else if (choice == "tr") {
+                std::ifstream inputFile(filePath);
+                if (!inputFile.is_open()) {
+                    std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                    return 1;
+                }
+                SymbolTableTreap table;
+                std::string line;
+                while (std::getline(inputFile, line)) {
+                    std::stringstream ss(line);
+                    std::string word;
+                    while (ss >> word) {
+                        std::string cleanedWord = removeTrailingPunctuation(word);
+                        table.put(cleanedWord);
+                    }
+                }
+                consultas_gerais(consultas, table);
+            }
+            else if (choice == "a23") {
+                std::ifstream inputFile(filePath);
+                if (!inputFile.is_open()) {
+                    std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                    return 1;
+                }
+                SymbolTable23 table;
+                std::string line;
+                while (std::getline(inputFile, line)) {
+                    std::stringstream ss(line);
+                    std::string word;
+                    while (ss >> word) {
+                        std::string cleanedWord = removeTrailingPunctuation(word);
+                        table.put(cleanedWord);
+                    }
+                }
+                for (string consult : consultas) {
+                    const char o = 'O';
+                    // Acha as palavras com maiores ocorrências no texto
+                    if (consult == "F"){
+                        cout << endl;
+                        cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+                        table.mostOccurred();
+                        cout << endl;
+                    }
+                        // Verifica quantas vezes a palavra dada está no texto
+                    else if (consult[0] == o) {
+                        cout << endl;
+                        string key;
+                        size_t spacePos = consult.find(' ');
+                        if (spacePos != std::string::npos) {
+                            // Extract the substring starting from the character after the space
+                            key = consult.substr(spacePos + 1);
+                        }
+                        Item value;
+                        value = table.find(key);
+                        if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                        else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
+                    }
+                    else if (consult == "L") {
+                        cout << endl;
+                        cout << "Palavra mais longa: ";
+                        table.longer();
+                        cout << endl;
+                    }
+                    else if (consult == "SR") {
+                        cout << endl;
+                        cout << "Palavra mais longa sem letras repetidas: ";
+                        table.longerwithnorepeatedletters();
+                        cout << endl;
+                    }
+                    else if (consult == "VD") {
+                        cout << endl;
+                        cout << "Palavra mais curta sem repeticao e com mais vogais: ";
+                        table.shorterwithmostvowel();
+                        cout << endl;
+                    }
+                    else break;
+                }
+            }
+            else if (choice == "arn") {
+                increased = false;
+                std::ifstream inputFile(filePath);
+                if (!inputFile.is_open()) {
+                    std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
+                    return 1;
+                }
+                SymbolTableRedBlack table;
+                std::string line;
+                while (std::getline(inputFile, line)) {
+                    std::stringstream ss(line);
+                    std::string word;
+                    while (ss >> word) {
+                        std::string cleanedWord = removeTrailingPunctuation(word);
+                        table.put(cleanedWord);
+                    }
+                }
+                for (string consult : consultas) {
+                    const char o = 'O';
+                    // Acha as palavras com maiores ocorrências no texto
+                    if (consult == "F") {
+                        cout << endl;
+                        cout << "Maior(es) ocorrencia(s) no texto: " << endl;
+                        table.mostOccurred();
+                        cout << endl;
+                    }
+                    else if (consult[0] == o) {
+                        cout << endl;
+                        string key;
+                        size_t spacePos = consult.find(' ');
+                        if (spacePos != std::string::npos) {
+                            // Extract the substring starting from the character after the space
+                            key = consult.substr(spacePos + 1);
+                        }
+                        RBNode* node;
+                        node = table.get(key);
+                        if (node->value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
+                        else cout << "A palavra " << key << " aparece " << node->value.occurrences << " vezes no texto" << endl;
+                    }
+                    else if (consult == "L") {
+                        cout << endl;
+                        cout << "Palavra mais longa: ";
+                        table.longer();
+                        cout << endl;
+                    }
+                    else if (consult == "SR") {
+                        cout << endl;
+                        cout << "Palavra mais longa sem letras repetidas: ";
+                        table.longerwithnorepeatedletters();
+                        cout << endl;
+                    }
+                    else if (consult == "VD") {
+                        cout << endl;
+                        cout << "Palavra mais curta sem repeticao e com mais vogais: ";
+                        table.shorterwithmostvowel();
+                        cout << endl;
+                    }
+                    else break;
+                }
+            }
+            else cout << "Valor invalido, insira um dentre as opcoes" << endl;
+            cout << "Fim do teste" << endl;
             cout << endl;
         }
-        if (choice == "vo"){
-            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
-            std::ifstream inputFile(filePath);
-            if (!inputFile.is_open()) {
-                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
-                return 1;
-            }
-            SymbolTableOV table;
-            std::string line;
-            while (std::getline(inputFile, line)) {
-                std::stringstream ss(line);
-                std::string word;
-                while (ss >> word) {
-                    std::string cleanedWord = removeTrailingPunctuation(word);
-                    table.put(cleanedWord);
-                }
-            }
-            table.print();
-            for (string consult : consultas) {
-                const char o = 'O';
-                // Acha as palavras com maiores ocorrências no texto
-                if (consult == "F"){
-                    cout << endl;
-                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
-                    table.mostOccurred();
-                    cout << endl;
-                }
-                    // Verifica quantas vezes a palavra dada está no texto
-                else if (consult[0] == o) {
-                    cout << endl;
-                    string key;
-                    size_t spacePos = consult.find(' ');
-                    if (spacePos != std::string::npos) {
-                        // Extract the substring starting from the character after the space
-                        key = consult.substr(spacePos + 1);
-                    }
-                    Item value;
-                    value = table.get(key);
-                    if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
-                    else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
-                }
-                else if (consult == "L") {
-                    cout << endl;
-                    cout << "Palavra mais longa: ";
-                    table.longer();
-                    cout << endl;
-                }
-                else if (consult == "SR") {
-                    cout << endl;
-                    cout << "Palavra mais longa sem repeticoes: ";
-                    table.sr();
-                    cout << endl;
-                }
-                else if (consult == "VD") {
-                    cout << endl;
-                    cout << "Palavra mais longa sem letras repetidas: ";
-                    table.vd();
-                    cout << endl;
-                }
-
-            }
-        }
-        else if (choice == "abb") {
-            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
-            std::ifstream inputFile(filePath);
-            if (!inputFile.is_open()) {
-                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
-                return 1;
-            }
-            SymbolTableBST table;
-            std::string line;
-            while (std::getline(inputFile, line)) {
-                std::stringstream ss(line);
-                std::string word;
-                while (ss >> word) {
-                    std::string cleanedWord = removeTrailingPunctuation(word);
-                    table.put(cleanedWord);
-                }
-            }
-            consultas_gerais(consultas, table);
-        }
-        else if (choice == "tr") {
-            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
-            std::ifstream inputFile(filePath);
-            if (!inputFile.is_open()) {
-                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
-                return 1;
-            }
-            SymbolTableTreap table;
-            std::string line;
-            while (std::getline(inputFile, line)) {
-                std::stringstream ss(line);
-                std::string word;
-                while (ss >> word) {
-                    std::string cleanedWord = removeTrailingPunctuation(word);
-                    table.put(cleanedWord);
-                }
-            }
-            consultas_gerais(consultas, table);
-        }
-        else if (choice == "a23") {
-            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
-            std::ifstream inputFile(filePath);
-            if (!inputFile.is_open()) {
-                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
-                return 1;
-            }
-            SymbolTable23 table;
-            std::string line;
-            while (std::getline(inputFile, line)) {
-                std::stringstream ss(line);
-                std::string word;
-                while (ss >> word) {
-                    std::string cleanedWord = removeTrailingPunctuation(word);
-                    table.put(cleanedWord);
-                }
-            }
-            table.print();
-            for (string consult : consultas) {
-                const char o = 'O';
-                // Acha as palavras com maiores ocorrências no texto
-                if (consult == "F"){
-                    cout << endl;
-                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
-                    table.mostOccurred();
-                    cout << endl;
-                }
-                    // Verifica quantas vezes a palavra dada está no texto
-                else if (consult[0] == o) {
-                    cout << endl;
-                    string key;
-                    size_t spacePos = consult.find(' ');
-                    if (spacePos != std::string::npos) {
-                        // Extract the substring starting from the character after the space
-                        key = consult.substr(spacePos + 1);
-                    }
-                    Item value;
-                    value = table.find(key);
-                    if (value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
-                    else cout << "A palavra " << key << " aparece " << value.occurrences << " vezes no texto" << endl;
-                }
-                else if (consult == "L") {
-                    cout << endl;
-                    cout << "Palavra mais longa: ";
-                    table.longer();
-                    cout << endl;
-                }
-                else if (consult == "SR") {
-                    cout << endl;
-                    cout << "Palavra mais longa sem letras repetidas: ";
-                    table.longerwithnorepeatedletters();
-                    cout << endl;
-                }
-                else if (consult == "VD") {
-                    cout << endl;
-                    cout << "Palavra mais curta sem repeticao e com mais vogais: ";
-                    table.shorterwithmostvowel();
-                    cout << endl;
-                }
-            }
-        }
-        else if (choice == "arn") {
-            increased = false;
-            std::string filePath = R"(C:\Users\Matheus\CLionProjects\EP02 de MAC0323\file.txt)";
-            std::ifstream inputFile(filePath);
-            if (!inputFile.is_open()) {
-                std::cout << "Falha ao abrir o arquivo de texto" << std::endl;
-                return 1;
-            }
-            SymbolTableRedBlack table;
-            std::string line;
-            while (std::getline(inputFile, line)) {
-                std::stringstream ss(line);
-                std::string word;
-                while (ss >> word) {
-                    std::string cleanedWord = removeTrailingPunctuation(word);
-                    table.put(cleanedWord);
-                }
-            }
-            for (string consult : consultas) {
-                const char o = 'O';
-                // Acha as palavras com maiores ocorrências no texto
-                if (consult == "F") {
-                    cout << endl;
-                    cout << "Maior(es) ocorrencia(s) no texto: " << endl;
-                    table.mostOccurred();
-                    cout << endl;
-                }
-                else if (consult[0] == o) {
-                    cout << endl;
-                    string key;
-                    size_t spacePos = consult.find(' ');
-                    if (spacePos != std::string::npos) {
-                        // Extract the substring starting from the character after the space
-                        key = consult.substr(spacePos + 1);
-                    }
-                    RBNode* node;
-                    node = table.get(key);
-                    if (node->value.occurrences < 1) cout << "A palavra " << key << " nao aparece no texto" << endl;
-                    else cout << "A palavra " << key << " aparece " << node->value.occurrences << " vezes no texto" << endl;
-                }
-                else if (consult == "L") {
-                    cout << endl;
-                    cout << "Palavra mais longa: ";
-                    table.longer();
-                    cout << endl;
-                }
-                else if (consult == "SR") {
-                    cout << endl;
-                    cout << "Palavra mais longa sem letras repetidas: ";
-                    table.longerwithnorepeatedletters();
-                    cout << endl;
-                }
-                else if (consult == "VD") {
-                    cout << endl;
-                    cout << "Palavra mais curta sem repeticao e com mais vogais: ";
-                    table.shorterwithmostvowel();
-                    cout << endl;
-                }
-                else break;
-            }
-        }
-        else cout << "Valor invalido, insira um dentre as opcoes" << endl;
-        cout << "Fim do teste" << endl;
-        cout << endl;
     }
-    return 0;
+    else if (mode == "teste") {
+        cout << "Teste de tempo de adicao de elementos:" << endl;
+        ifstream inputFile(filePath);
+        if (!inputFile.is_open()) {
+            cout << "Falha ao abrir o arquivo de texto" << endl;
+            return 1;
+        }
+        std::string line;
+
+        clock_t begin_timeOV = clock();
+        SymbolTableOV tableOV;
+        while (std::getline(inputFile, line)) {
+            std::stringstream ss(line);
+            std::string word;
+            while (ss >> word) {
+                std::string cleanedWord = removeTrailingPunctuation(word);
+                tableOV.put(cleanedWord);
+            }
+        }
+        clock_t finish_timeOV = clock();
+        inputFile.clear();
+        inputFile.seekg(0, std::ios::beg);
+
+        clock_t begin_timeBST = clock();
+        SymbolTableBST tableBST;
+        while (std::getline(inputFile, line)) {
+            std::stringstream ss(line);
+            std::string word;
+            while (ss >> word) {
+                std::string cleanedWord = removeTrailingPunctuation(word);
+                tableBST.put(cleanedWord);
+            }
+        }
+        clock_t finish_timeBST = clock();
+        inputFile.clear();
+        inputFile.seekg(0, std::ios::beg);
+
+        clock_t begin_timeTR = clock();
+        SymbolTableTreap tableTR;
+        while (std::getline(inputFile, line)) {
+            std::stringstream ss(line);
+            std::string word;
+            while (ss >> word) {
+                std::string cleanedWord = removeTrailingPunctuation(word);
+                tableTR.put(cleanedWord);
+            }
+        }
+        clock_t finish_timeTR = clock();
+        inputFile.clear();
+        inputFile.seekg(0, std::ios::beg);
+
+        clock_t begin_time23 = clock();
+        SymbolTable23 table23;
+        while (std::getline(inputFile, line)) {
+            std::stringstream ss(line);
+            std::string word;
+            while (ss >> word) {
+                std::string cleanedWord = removeTrailingPunctuation(word);
+                table23.put(cleanedWord);
+            }
+        }
+        clock_t finish_time23 = clock();
+        inputFile.clear();
+        inputFile.seekg(0, std::ios::beg);
+
+        clock_t begin_timeRB = clock();
+        SymbolTableRedBlack tableRB;
+        while (std::getline(inputFile, line)) {
+            std::stringstream ss(line);
+            std::string word;
+            while (ss >> word) {
+                std::string cleanedWord = removeTrailingPunctuation(word);
+                tableRB.put(cleanedWord);
+            }
+        }
+        clock_t finish_timeRB = clock();
+        inputFile.clear();
+        inputFile.seekg(0, std::ios::beg);
+
+        // Calculate the time taken for each implementation
+        double timeOV = double(finish_timeOV - begin_timeOV) / CLOCKS_PER_SEC;
+        double timeBST = double(finish_timeBST - begin_timeBST) / CLOCKS_PER_SEC;
+        double timeTR = double(finish_timeTR - begin_timeTR) / CLOCKS_PER_SEC;
+        double time23 = double(finish_time23 - begin_time23) / CLOCKS_PER_SEC;
+        double timeRB = double(finish_timeRB - begin_timeRB) / CLOCKS_PER_SEC;
+
+        // Output the values stored in the time variables
+        cout << "Vetor Ordenado: " << timeOV << " segundos" << endl;
+        cout << "Arvore de Busca Binaria: " << timeBST << " segundos" << endl;
+        cout << "Treap: " << timeTR << " segundos" << endl;
+        cout << "Arvore 2-3: " << time23 << " segundos" << endl;
+        cout << "Arvore Rubro-Negra: " << timeRB << " segundos" << endl;
+
+        cout << "Teste de tempo de busca, insira a palavra a ser buscada: " << endl;
+        string key;
+        cin >> key;
+
+        Item valueOV;
+        begin_timeOV = clock();
+        valueOV = tableOV.get(key);
+        finish_timeOV = clock();
+
+        Item valueBST;
+        begin_timeBST = clock();
+        valueBST = tableBST.get(key);
+        finish_timeBST = clock();
+
+        Item valueTR;
+        begin_timeTR = clock();
+        valueTR = tableTR.get(key);
+        finish_timeTR = clock();
+
+        Item value23;
+        begin_time23 = clock();
+        value23 = table23.find(key);
+        finish_time23 = clock();
+
+        RBNode* valueRB;
+        begin_timeRB = clock();
+        valueRB = tableRB.get(key);
+        finish_timeRB = clock();
+
+        timeOV = double(finish_timeOV - begin_timeOV) / CLOCKS_PER_SEC;
+        timeBST = double(finish_timeBST - begin_timeBST) / CLOCKS_PER_SEC;
+        timeTR = double(finish_timeTR - begin_timeTR) / CLOCKS_PER_SEC;
+        time23 = double(finish_time23 - begin_time23) / CLOCKS_PER_SEC;
+        timeRB = double(finish_timeRB - begin_timeRB) / CLOCKS_PER_SEC;
+
+        if (valueOV.occurrences > 0 ) cout << "Vetor Ordenado (encontrou): " << timeOV << " segundos" << endl;
+        else cout << "Vetor Ordenado (nao encontrou): " << timeOV << " segundos" << endl;
+
+        if (valueBST.occurrences > 0) cout << "Arvore de Busca Binaria (encontrou): " << timeBST << " segundos" << endl;
+        else cout << "Arvore de Busca Binaria (nao encontrou): " << timeBST << " segundos" << endl;
+
+        if (valueTR.occurrences > 0) cout << "Treap (encontrou): " << timeTR << " segundos" << endl;
+        else cout << "Treap (nao encontrou): " << timeTR << " segundos" << endl;
+
+        if (value23.occurrences > 0) cout << "Arvore 2-3 (encontrou): " << time23 << " segundos" << endl;
+        else cout << "Arvore 2-3 (nao encontrou): " << time23 << " segundos" << endl;
+
+        if (valueRB != nullptr) cout << "Arvore Rubro-Negra (encontrou): " << timeRB << " segundos" << endl;
+        else cout << "Arvore Rubro-Negra (nao encontrou): " << timeRB << " segundos" << endl;
+
+        return 0;
+    }
 }
